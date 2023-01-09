@@ -34,26 +34,3 @@ class Dumper:
         with open(self.file_name, "wb") as file:
             dump(self.dump_dict, file)
 
-
-# def select_savings(self, event):
-#     index = self.lst_savings.curselection()[0]
-#     session = self.lst_savings.get(index)
-#     # self.name_session = session
-#     self.init_from_dump(session)
-
-# def save_session(self):
-#     index = self.lst_savings.index(tk.END)
-#     session = self.ent_savings.get()
-#     self.ent_savings.delete(0, tk.END)
-#     self.lst_savings.insert(index, session)
-#     self.current_savings["session"].append(session)
-
-#     self.current_savings.clear()
-
-#     self.current_savings["session"] = [session]
-#     if self.path_text != '':
-#         self.current_savings["text"] = self.path_text
-#     if self.path_dict != '':
-#         self.current_savings["dict"] = self.path_dict
-
-#     self.dump.save_data(self.current_savings, session)

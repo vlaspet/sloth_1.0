@@ -381,12 +381,6 @@ class Window:
         session = self.ent_savings.get()
         self.ent_savings.delete(0, tk.END)
 
-        # save new data in dict
-        filepath = self.dump.get_dump_data(self.current_session)["dict"]
-        
-        with open(filepath, 'w', encoding='utf-8') as file:
-            file.write(self.txt_dict.get("1.0", tk.END).strip())
-
         if session == '':
             self.dump.save_data(copy.deepcopy(self.get_current_data()),
                 self.current_session)
@@ -399,6 +393,12 @@ class Window:
             self.dump.save_data(copy.deepcopy(self.get_current_data()),
                 self.current_session)
             self.session_up()
+
+        # save new data in dict
+        filepath = self.dump.get_dump_data(self.current_session)["dict"]
+        
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(self.txt_dict.get("1.0", tk.END).strip())
 
     def session_up(self):
         l = [x for x in range(self.lst_savings.size())]

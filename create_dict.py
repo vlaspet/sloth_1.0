@@ -84,10 +84,3 @@ class CreateDict:
             for x in dict:
                 file.write(x)
 
-# cd = CreateDict()
-# d_e = DictExtractor("dict.txt")
-# dictt = d_e.get_data()
-# new_dict = cd.shuffle_by_25_words(dictt[3000:3200], cd.prefixes)
-# dictionary = cd.set_dict(new_dict)
-
-# cd.create_dict(dictionary, "16.txt")
