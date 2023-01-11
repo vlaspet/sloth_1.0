@@ -207,8 +207,9 @@ adj: eager ['i:g-er] - жаждущий;
 adj: glorious ['glori-es] - славный;
 adv: gladly - с удовольствием;
 12
-n: wikipedia;
 n: free [mj];
+n: wikipedia;
 n: navigationjump;
 n: templates;
 n: encyclopedia;
+n: that;

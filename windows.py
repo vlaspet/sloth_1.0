@@ -306,11 +306,11 @@ class Window:
         self.btn_open_text.grid(row=5, column=0, sticky="we")
         self.btn_open_text.rowconfigure(1, weight=0)
 
-        self.btn_open_dict = tk.Button(self.frm_navig, text="Dict",
+        self.btn_open_dict = tk.Button(self.frm_navig, text="Dictionary",
             command=self.open_dict)
         self.btn_open_dict.grid(row=6, column=0, sticky="we")
 
-        self.btn_add_dict = tk.Button(self.frm_navig, text="Add Dict")
+        self.btn_add_dict = tk.Button(self.frm_navig, text="Add to dict")
         self.btn_add_dict.grid(row=7, column=0, sticky="we")
 
         self.btn_clear_fields = tk.Button(self.frm_navig,
@@ -328,13 +328,31 @@ class Window:
         self.ent_savings = tk.Entry(self.frm_navig, width=15)
         self.ent_savings.grid(row=3, column=0)
 
-        self.btn_save = tk.Button(self.frm_navig, text="Delete",
+        self.btn_delete = tk.Button(self.frm_navig, text="Delete",
             command=self.delete_session)
-        self.btn_save.grid(row=2, column=0, sticky="we")
+        self.btn_delete.grid(row=2, column=0, sticky="we")
 
         self.btn_save = tk.Button(self.frm_navig, text="Save",
             command=self.save_session)
         self.btn_save.grid(row=4, column=0, sticky="we")
+
+        # dicts
+        self.lbl_dicts = tk.Label(self.frm_navig, text="Dicts")
+        self.lbl_dicts.grid(row=0, column=1, sticky="we")
+
+        self.lst_dicts = tk.Listbox(self.frm_navig, width=15, height=5)
+        self.lst_dicts.grid(row=1, column=1)
+
+        self.ent_dicts = tk.Entry(self.frm_navig, width=15)
+        self.ent_dicts.grid(row=3, column=1)
+
+        self.btn_dicts_delete = tk.Button(self.frm_navig, text="Delete",
+            command=self.delete_session)
+        self.btn_dicts_delete.grid(row=2, column=1, sticky="we")
+
+        self.btn_dicts_save = tk.Button(self.frm_navig, text="Add",
+            command=self.save_session)
+        self.btn_dicts_save.grid(row=4, column=1, sticky="we")
 
     def clear_fields(self):
         self.ent_pref.delete(0, tk.END)
@@ -418,7 +436,6 @@ class Window:
             self.dump.save_data(self.sessions, "sessions")
         else:
             self.dump.delete("sessions")
-        print(self.dump.get_dump())
 
         self.lst_savings.delete(0, tk.END)
         for x in range(len(self.sessions)):
