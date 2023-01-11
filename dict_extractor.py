@@ -85,7 +85,7 @@ class DictExtractor:
                     if end != -1:
                         self.buffer.append(x[start:end])
                     else:
-                        self.buffer[:-1]
+                        self.buffer.append(x[start:-1])
             elif prefix == "all:":
                 start = x.find(":") + 2
                 end = x.find(" [")
@@ -96,7 +96,7 @@ class DictExtractor:
                     if end != -1:
                         self.buffer.append(x[start:end])
                     else:
-                        self.buffer[:-1]
+                        self.buffer.append(x[start:-1])
         return self.buffer
 
     def get_word_inf(self, word, index):

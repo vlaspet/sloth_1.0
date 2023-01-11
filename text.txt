@@ -1,6 +1,6 @@
 From Wikipedia, the free encyclopedia
 Jump to navigationJump to search
-For a guide on using the documentation in Wikipedia templates, see Template:Documentation
+For a guide on using the documentation in Wikipedia templates, see template:Documentation
 Documentation is any communicable material that is used to describe, explain or instruct regarding some attributes of an object, system or procedure, such as its parts, assembly, installation, maintenance and use.[1] As a form of knowledge management and knowledge organization, documentation can be provided on paper, online, or on digital or analog media, such as audio tape or CDs. Examples are user guides, white papers, online help, and quick-reference guides. Paper or hard-copy documentation has become less common.[citation needed] Documentation is often distributed via websites, software products, and other online applications.
 
 Documentation as a set of instructional materials shouldn't be confused with documentation science, the study of the recording and retrieval of information.

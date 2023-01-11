@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter import messagebox
 from dumper import Dumper
 from create_dict import CreateDict
 from finder import Finder
@@ -7,6 +8,9 @@ import copy
 
 class Window:
     def __init__(self, dump, create_d):
+        self.prefixes = ["n:", "v:", "vv:", "adj:", "adv:", "pre:",
+            "con:", "pro:", "exc:", "int:", "pref:", "s:"]
+
         # for finding in text every whole word
         self.text_word_indexes = []
         self.text_next_index = 0
@@ -131,13 +135,8 @@ class Window:
 
         # getting new words
         try:
-            print("fuck")
-            self.opened_text = self.default_dict["opened_text"]
-            self.opened_dict = self.default_dict["opened_dict"]
-            print(self.opened_text)
-            print(self.opened_dict)
             if self.opened_text and self.opened_dict:
-                f = Finder(self.path_text, self.path_dict)
+                f = Finder(self.path_dict, self.path_text)
                 self.new_words = f.get_new_words()
                 self.lst_new_words.delete(0, tk.END)
                 for x in range(len(self.new_words)):
@@ -149,22 +148,6 @@ class Window:
             self.lst_new_words.delete(0, tk.END)
             print("Something went wrong!")
 
-        # initializing new words
-        # try:
-        #     self.path_new_words = self.default_dict["new_words"]
-        #     # IT'S NOT A COPY
-        #     with open(self.path_new_words, "r", encoding="utf-8") as file:
-        #         self.lst_new_words.delete(0, tk.END)
-        #         self.lst_new_words.insert(tk.END, file.read())
-        # except KeyError as e:
-        #     print("Not exists: %s" % e)
-        # except IOError as e:
-        #     # self.lst_new_words.delete(0, tk.END)
-        #     print("Not found a NEW WORDS file: %s" % e)
-        # except:
-        #     print("Unknown error.")
-
-        # getting dict word
         try:
             self.dict_find_word = self.default_dict["dict_find_word"]
             self.ent_dict_word.delete(0, tk.END)
@@ -264,6 +247,10 @@ class Window:
         self.lst_new_words.insert(0, "tool")
         self.lst_new_words.bind("<<ListboxSelect>>", self.lst_selected_word)
 
+        self.btn_new_words = tk.Button(self.frm_new_words,
+            text="Show new words", command=self.show_new_words)
+        self.btn_new_words.grid(row=2, column=0, sticky="we")
+
         self.scr_text = tk.Scrollbar(self.frm_new_words, orient='vertical',
             command=self.lst_new_words.yview)
         self.scr_text.grid(row=1, column=1, sticky="ns")
@@ -326,6 +313,10 @@ class Window:
         self.btn_add_dict = tk.Button(self.frm_navig, text="Add Dict")
         self.btn_add_dict.grid(row=7, column=0, sticky="we")
 
+        self.btn_clear_fields = tk.Button(self.frm_navig,
+            text="Clear fields", command=self.clear_fields)
+        self.btn_clear_fields.grid(row=8, column=0, sticky="we")
+
         #savings
         self.lbl_savings = tk.Label(self.frm_navig, text="Savings")
         self.lbl_savings.grid(row=0, column=0, sticky="we")
@@ -345,21 +336,66 @@ class Window:
             command=self.save_session)
         self.btn_save.grid(row=4, column=0, sticky="we")
 
+    def clear_fields(self):
+        self.ent_pref.delete(0, tk.END)
+        self.ent_word.delete(0, tk.END)
+        self.ent_transc.delete(0, tk.END)
+        self.ent_transl.delete(0, tk.END)
+        self.ent_dict_word.delete(0, tk.END)
+        self.lst_new_words.delete(0, tk.END)
+        self.txt_dict.delete("1.0", tk.END)
+        self.txt_text.delete("1.0", tk.END)
+
+    def show_new_words(self):
+        """Shows new words from checking the current open dict
+        and text."""
+        if self.opened_text and self.opened_dict:
+            f = Finder(self.path_dict, self.path_text)
+            self.new_words = f.get_new_words()
+            self.lst_new_words.delete(0, tk.END)
+            for x in range(len(self.new_words)):
+                self.lst_new_words.insert(x, self.new_words[x])
+
     def add_word(self):
         pref = self.ent_pref.get().strip(" ")
         word = self.ent_word.get().strip(" ")
         transc = self.ent_transc.get().strip(" ")
         transl = self.ent_transl.get().strip(" ")
         buffer = []
-        new_line = f"{pref}: {word} [{transc}] - {transl};"
 
+        if f"{pref}:" in self.prefixes:
+            if transc == "" and transl == "":
+                new_line = f"{pref}: {word};"
+            elif transc == "":
+                new_line = f"{pref}: {word} - {transl};"
+            elif transl == "":
+                new_line = f"{pref}: {word} [{transc}];"
+            elif pref == "" or word == "":
+                messagebox.showwarning("warning",
+                    "You can't add words without a prefix or a word!")
+                return None
+            else:
+                new_line = f"{pref}: {word} [{transc}] - {transl};"
+        else:
+            messagebox.showerror("Not a correct prefix",
+                f"Correct prefixes: {', '.join(self.prefixes)}")
+            return None
+
+        # correct deleting of the added word
+        idx_new_word = self.lst_new_words.curselection()[0]
+        self.lst_new_words.delete(idx_new_word)
+        self.new_words.pop(idx_new_word)
+
+        # the start and the end index of the last block of 200 words
         end_idx = self.txt_dict.search("[1-9]\n", index=tk.END, backwards=True,
             regexp=True)
         end_idx = end_idx.split(".")[0] + '.' + str(int(end_idx.split(".")[1]) + 1)
         start_idx = end_idx.split(".")[0] + ".0"
         
+        # a number of the current 200 words block
         dict_idx = int(self.txt_dict.get(start_idx, end_idx))
 
+        # to get words from that 200 words block and add a new word
         for line in self.txt_dict.get(start_idx, tk.END).split('\n'):
             if line.find(":") != -1 and line.find(";") != -1:
                 buffer.append(line.strip())
@@ -417,7 +453,7 @@ class Window:
         self.ent_savings.delete(0, tk.END)
 
         if session == '':
-            self.dump.save_data(copy.deepcopy(self.get_current_data()),
+            self.dump.save_data(self.get_current_data(),
                 self.current_session)
             self.session_up()
         else:
@@ -425,7 +461,7 @@ class Window:
             self.lst_savings.insert(index, session)
             self.current_index = index
             self.sessions.append(session)
-            self.dump.save_data(copy.deepcopy(self.get_current_data()),
+            self.dump.save_data(self.get_current_data(),
                 self.current_session)
             self.session_up()
 
@@ -478,10 +514,15 @@ class Window:
     def lst_selected_word(self, event):
         index = self.lst_new_words.curselection()[0]
         word = self.lst_new_words.get(index)
-        self.ent_word.delete(0, tk.END)
-        self.ent_dict_word.delete(0, tk.END)
-        self.ent_word.insert(tk.END, word)
-        self.ent_dict_word.insert(tk.END, word)
+
+        if self.text_find_word != word:
+            self.ent_word.delete(0, tk.END)
+            self.ent_dict_word.delete(0, tk.END)
+            self.ent_word.insert(tk.END, word)
+            self.ent_dict_word.insert(tk.END, word)
+            self.ent_transc.delete(0, tk.END)
+            self.ent_transl.delete(0, tk.END)
+            self.ent_pref.delete(0, tk.END)
         
         self.text_find_txt(word)
 
@@ -511,53 +552,79 @@ class Window:
             file.write(text)
 
     def text_find_txt(self, word):
+        """It's finding only whole words in the text.
+        """
+        # we need to zero indexes, next index and add a new
+        # finding word
         if self.text_find_word != word:
             self.text_find_word = word
             self.text_word_indexes = []
             self.text_next_index = 0
-
             self.txt_text.tag_remove('found', '1.0', tk.END)
+            # to delete a previous tags
             
             if word:
                 idx = '1.0'
                 while 1:
                     idx = self.txt_text.search(word, idx, nocase=1,
                                     stopindex=tk.END)
+                    # found a first index of the found word in text
+
+                    # if not found a word
                     if not idx: break
+
                     lastidx = '%s+%dc' % (idx, len(word))
 
                     string_idx = int(idx[idx.find(".")+1 :])
+                    # index of the word in the line
         
                     if string_idx > 0:
-                        buf_idx = idx[:idx.find(".")] + "." + str(string_idx - 1)
+                        buf_idx = idx[:idx.find(".")] + "." + str(
+                            string_idx - 1)
+                        # we are shifting on one character back
+                        # to check if it is a whole word
                         buf_lastidx = '%s+%dc' % (buf_idx, (len(word)+2))
+                        # plus 2 because our first index on one symbol
+                        # greater of the word
                         buf_word = self.txt_text.get(buf_idx, buf_lastidx)
+                        # found word with with two additional charachters
+                        # one at the beginning and one at the end
                         buf_word = buf_word.strip(
                             "!@#$%^&*()_+=-`~;:\|'\",./<>? \n"
                         )
-                        if buf_word == word:
+                        if buf_word.casefold() == word:
                             self.text_word_indexes.append(idx)
                             self.txt_text.tag_add('found', idx, lastidx)
                     else:
-                        buf_lastidx = '%s+%dc' % (buf_idx, (len(word)+1))
-                        buf_word = word.strip("!@#$%^&*()_+=-`~;:\|'\",./<>? \n")
-                        if buf_word == word:
+                        buf_lastidx = '%s+%dc' % (idx, (len(word)+1))
+                        # adding only one charachter to the end
+                        # because first index is 0
+                        buf_word = word.strip(
+                            "!@#$%^&*()_+=-`~;:\|'\",./<>? \n")
+                        if buf_word.casefold() == word:
                             self.text_word_indexes.append(idx)
                             self.txt_text.tag_add('found', idx, lastidx)
 
                     idx = lastidx
+                    # idx equals lastidx because we need to find a next
+                    # word from the end index of the first one
                 self.txt_text.tag_config('found', foreground='red')
+                # turning found words in red colour for highlighting
 
+        # shifting in the found words by changing view in the text
+        # widget
         i = self.text_next_index
         size = len(self.text_word_indexes)
         if size > i:
             self.text_next_index += 1
             self.txt_text.see(self.text_word_indexes[i])
-        elif i >= size and size != 0:
+        elif i == size and size != 0:
+            # we're comming back to the first found word
             self.text_next_index = 1
             self.txt_text.see(self.text_word_indexes[0])
 
     def dict_find_txt(self):
+        """It's finding all character set matches"""
         word = self.ent_dict_word.get()
 
         if self.dict_find_word != word:

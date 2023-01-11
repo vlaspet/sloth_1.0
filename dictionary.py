@@ -42,74 +42,74 @@ class Dictionary(DictExtractor):
         words_buffer = self.find_word(line).split(" ")
         word = words_buffer[0]
         transc = self.find_transc(line)
+        # if words of a verb is more than one
         if len(words_buffer) > 1:
-            # if words of a verb is more than one
+            # if a word ends in consonant-vowel-consonant
             if word[-1] in consonants[:-2] and (
                 word[-3:][1] in vowels and word[-3:][0] in consonants):
-                # if a word ends in consonant-vowel-consonant
+                # if vowels more than 1
                 if len(findall(r"[iouea]", word)) > 1:
-                    # if vowels more than 1
+                    # checking if it's a two characters letter
+                    # if true than cons_word = 2 symbols
+                    # we are checking second consonant from
+                    # the end
                     if word[-4:-2] in two_charact:
-                        # checking if it's a two characters letter
-                        # if true than cons_word = 2 symbols
-                        # we are checking second consonant from
-                        # the end
                         cons_word = word[-4:-2]
                     else:
                         # if false than cons_word = 1 symbol
                         cons_word = word[-3:][0]
                     index = transc.find("'")
+                    # if the index was not found than the stress is
+                    # on the first syllable this word doesn't fit
+                    # and if "'" not on the first syllable
                     if index != -1 and index != 1:
-                        # if the index was not found than the stress is
-                        # on the first syllable this word doesn't fit
-                        # and if "'" not on the first syllable
                         cons_transc = transc[index+1:]
+                        # if a consonant in the ration
                         if cons_word in ratio_of_letters:
-                            # if a consonant in the ration
+                            # than go through every variant
                             for x in ratio_of_letters[cons_word]:
-                                # than go through every variant
+                                # if a symbol of a transcription
+                                # corresponds to the ratio variant
                                 if cons_transc[:len(x)] == x:
-                                    # if a symbol of a transcription
-                                    # corresponds to the ratio variant
                                     return True
                         else:
+                            # checks out one letter consonant
                             if cons_word == cons_transc[0]:
-                                # checks out one letter consonant
                                 return True
                 else:
                     return True
         else:
+            # if a word ends in consonant-vowel-consonant
             if word[-1] in consonants[:-2] and (
                 word[-3:][1] in vowels and word[-3:][0] in consonants):
-                # if a word ends in consonant-vowel-consonant
+                # if vowels more than 1
                 if len(findall(r"[iouea]", word)) > 1:
-                    # if vowels more than 1
+                    # checking if it's a two characters letter
+                    # if true than cons_word = 2 symbols
+                    # we are checking second consonant from
+                    # the end
                     if word[-4:-2] in two_charact:
-                        # checking if it's a two characters letter
-                        # if true than cons_word = 2 symbols
-                        # we are checking second consonant from
-                        # the end
                         cons_word = word[-4:-2]
                     else:
                         # if false than cons_word = 1 symbol
                         cons_word = word[-3:][0]
                     index = transc.find("'")
+                    # if the index was not found than the stress is
+                    # on the first syllable this word doesn't fit
+                    # and if "'" not on the first syllable
                     if index != -1 and index != 1:
-                        # if the index was not found than the stress is
-                        # on the first syllable this word doesn't fit
-                        # and if "'" not on the first syllable
                         cons_transc = transc[index+1:]
+                        # if a consonant in the ration
                         if cons_word in ratio_of_letters:
-                            # if a consonant in the ration
+                            # than go through every variant
                             for x in ratio_of_letters[cons_word]:
-                                # than go through every variant
+                                # if a symbol of a transcription
+                                # corresponds to the ratio variant
                                 if cons_transc[:len(x)] == x:
-                                    # if a symbol of a transcription
-                                    # corresponds to the ratio variant
                                     return True
                         else:
+                            # checks out one letter consonant
                             if cons_word == cons_transc[0]:
-                                # checks out one letter consonant
                                 return True
                 else:
                     return True
@@ -121,11 +121,11 @@ class Dictionary(DictExtractor):
         words_buffer = self.find_word(line).split(" ")
         word = words_buffer[0]
 
+        # for one or two syllable words that end in
+        # vowel-consonant (except x and w) or the stress
+        # is on the end syllable double the last letter
+        # and add -ing
         if self.is_double_consonant_v(line):
-                # for one or two syllable words that end in
-                # vowel-consonant (except x and w) or the stress
-                # is on the end syllable double the last letter
-                # and add -ing
                 word += word[-1] + 'ing'
         elif word[-2:][0] in consonants and word[-1] == 'e':
             # for words that end in a silent -e,
@@ -141,12 +141,12 @@ class Dictionary(DictExtractor):
         words_buffer = self.find_word(line).split(" ")
         word = words_buffer[0]
 
+        # for one or two syllable words that end in
+        # vowel-consonant (except x and w) or the stress
+        # is on the end syllable double the last letter
+        # and add -ed
         if self.is_double_consonant_v(line):
-                # for one or two syllable words that end in
-                # vowel-consonant (except x and w) or the stress
-                # is on the end syllable double the last letter
-                # and add -ed
-                word += word[-1] + 'ed'
+            word += word[-1] + 'ed'
         elif word[-1] == "y" and word[-2][0] in consonants:
             # the verb ends in a consonant + -y
             # we change the y to i and add -ed
@@ -166,8 +166,8 @@ class Dictionary(DictExtractor):
         words_buffer = self.find_word(line).split(" ")
         word = words_buffer[0]
 
+        # if words end in any ends_es than add -es
         if word[-2:] in ends_es:
-            # if words end in any ends_es than add -es
             word += "es"
         elif word[-1] == "y" and word[-2:][0] in consonants[:-2]:
             # words end in -y we change the y to -ies
