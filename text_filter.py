@@ -20,10 +20,3 @@ class TextFilter:
             dict.close()
     def get_words(self):
         return self.data
-
-t = TextFilter("dict.txt")
-
-w = t.get_words()
-for x in w:
-    print(x)
-print(len(w))

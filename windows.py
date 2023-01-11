@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from dumper import Dumper
 from create_dict import CreateDict
+from finder import Finder
 import copy
 
 class Window:
@@ -26,7 +27,9 @@ class Window:
         self.current_session = "default"
         self.path_text = ""
         self.path_dict = ""
-        self.path_new_words = ""
+        self.opened_text = False
+        self.opened_dict = False
+        self.new_words = []
         self.dict_find_word = ""
         self.word = ""
         self.transc = ""
@@ -55,6 +58,8 @@ class Window:
         saving as a independent part of dump.
         text - a path for a text.
         dict - a path for a dictionary.
+        opened_text - was a text file opened then True.
+        opened_dict - was a dict file opened then True.
         new_words - a path for new words.
         dict_find_word - a word for finding in dict.
         pref - a prefix of the word.
@@ -94,12 +99,16 @@ class Window:
             with open(self.path_text, "r", encoding="utf-8") as file:
                 self.txt_text.delete("1.0", tk.END)
                 self.txt_text.insert(tk.END, file.read())
+                self.opened_text = True
         except KeyError as e:
+            self.opened_text = False
             print("Not exists: %s" % e)
         except IOError as e:
+            self.opened_text = False
             self.txt_text.delete("1.0", tk.END)
             print("Not found a TEXT file: %s" % e)
         except:
+            self.opened_text = False
             print("Unknown error.")
 
         # initializing dictionary
@@ -108,28 +117,52 @@ class Window:
             with open(self.path_dict, "r", encoding="utf-8") as file:
                 self.txt_dict.delete("1.0", tk.END)
                 self.txt_dict.insert(tk.END, file.read())
+                self.opened_dict = True
         except KeyError as e:
+            self.opened_dict = False
             print("Not exists: %s" % e)
         except IOError as e:
+            self.opened_dict = False
             self.txt_dict.delete("1.0", tk.END)
             print("Not found a DICT file: %s" % e)
         except:
+            self.opened_dict = False
             print("Unknown error.")
 
-        # initializing new words
+        # getting new words
         try:
-            self.path_new_words = self.default_dict["new_words"]
-            # IT'S NOT A COPY
-            with open(self.path_new_words, "r", encoding="utf-8") as file:
+            print("fuck")
+            self.opened_text = self.default_dict["opened_text"]
+            self.opened_dict = self.default_dict["opened_dict"]
+            print(self.opened_text)
+            print(self.opened_dict)
+            if self.opened_text and self.opened_dict:
+                f = Finder(self.path_text, self.path_dict)
+                self.new_words = f.get_new_words()
                 self.lst_new_words.delete(0, tk.END)
-                self.lst_new_words.insert(tk.END, file.read())
+                for x in range(len(self.new_words)):
+                    self.lst_new_words.insert(x, self.new_words[x])
         except KeyError as e:
-            print("Not exists: %s" % e)
-        except IOError as e:
-            # self.lst_new_words.delete(0, tk.END)
-            print("Not found a NEW WORDS file: %s" % e)
+            self.lst_new_words.delete(0, tk.END)
+            print("Not esists: %s" % e)
         except:
-            print("Unknown error.")
+            self.lst_new_words.delete(0, tk.END)
+            print("Something went wrong!")
+
+        # initializing new words
+        # try:
+        #     self.path_new_words = self.default_dict["new_words"]
+        #     # IT'S NOT A COPY
+        #     with open(self.path_new_words, "r", encoding="utf-8") as file:
+        #         self.lst_new_words.delete(0, tk.END)
+        #         self.lst_new_words.insert(tk.END, file.read())
+        # except KeyError as e:
+        #     print("Not exists: %s" % e)
+        # except IOError as e:
+        #     # self.lst_new_words.delete(0, tk.END)
+        #     print("Not found a NEW WORDS file: %s" % e)
+        # except:
+        #     print("Unknown error.")
 
         # getting dict word
         try:
@@ -367,7 +400,9 @@ class Window:
 
         current_data["text"] = self.path_text
         current_data["dict"] = self.path_dict
-        current_data["new_words"] = self.path_new_words
+        current_data["opened_text"] = self.opened_text
+        current_data["opened_dict"] = self.opened_dict
+        current_data["new_words"] = self.new_words
         current_data["dict_find_word"] = self.ent_dict_word.get()
         current_data["pref"] = self.ent_pref.get()
         current_data["word"] = self.ent_word.get()
@@ -417,6 +452,7 @@ class Window:
         )
         if not filepath:
             return None
+        self.opened_text = True
         self.path_text = filepath
 
         self.txt_text.delete("1.0", tk.END)
@@ -431,6 +467,7 @@ class Window:
         )
         if not filepath:
             return None
+        self.opened_dict = True
         self.path_dict = filepath
 
         self.txt_dict.delete("1.0", tk.END)
