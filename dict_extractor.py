@@ -8,8 +8,6 @@ class DictExtractor:
             for line in dict:
                 if line.find(":") != -1 and line.find(";") != -1:
                     self.data.append(line.strip())
-                else:
-                    pass
         
         for x in self.data:
             transc_index = x.find(" [")
@@ -164,7 +162,7 @@ class DictExtractor:
         if transl_index != -1:
             buffer = line[start:-1]
         return buffer
-    def find_index(self, line):
+    def find_prefix(self, line):
         buffer = ""
         prefix_index = line.find(":")
         end = prefix_index + 1
@@ -172,3 +170,9 @@ class DictExtractor:
         if prefix_index != -1:
             buffer = line[:end]
         return buffer
+
+d = DictExtractor("dict.txt")
+
+l = d.get_data()
+for x in l:
+    print(d.find_transc(x))

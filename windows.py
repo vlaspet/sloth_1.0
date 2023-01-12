@@ -310,7 +310,7 @@ class Window:
             command=self.open_dict)
         self.btn_open_dict.grid(row=6, column=0, sticky="we")
 
-        self.btn_add_dict = tk.Button(self.frm_navig, text="Add to dict")
+        self.btn_add_dict = tk.Button(self.frm_navig, text="Add dict")
         self.btn_add_dict.grid(row=7, column=0, sticky="we")
 
         self.btn_clear_fields = tk.Button(self.frm_navig,
@@ -353,6 +353,9 @@ class Window:
         self.btn_dicts_save = tk.Button(self.frm_navig, text="Add",
             command=self.save_session)
         self.btn_dicts_save.grid(row=4, column=1, sticky="we")
+
+    def add_dict(self):
+        pass
 
     def clear_fields(self):
         self.ent_pref.delete(0, tk.END)
@@ -427,7 +430,6 @@ class Window:
         new_line = '\n' + "".join(buffer)
         self.txt_dict.insert(tk.END, new_line)
         self.txt_dict.see(tk.END)
-
 
     def delete_session(self):
         self.dump.delete(self.sessions[self.current_index])

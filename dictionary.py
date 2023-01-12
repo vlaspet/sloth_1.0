@@ -1,27 +1,65 @@
 from dict_extractor import DictExtractor
+from text_filter import TextFilter
 from re import split
 from re import findall
 
-class Dictionary(DictExtractor):
+class Dictionary:
     def __init__(self, file):
-        DictExtractor.__init__(self, file)
-        self.dictionary = {}
+        self.data = []
+        
+        if self.is_dict(file):
+            dict_e = DictExtractor(file)
+            buffer = {}
 
-        clear_words = self.get_clear_words_by_prefix("all:")
-        for y in clear_words:
-            splited_words = split(" |/|-", y)
-            for z in splited_words:
-                buff = z.strip(",!?").casefold()
-                self.dictionary[buff] = None
-        verbs = self.get_words_by_prefix("v:", True)
-        for x in verbs:
-            self.dictionary[self.adding_ed_v(x)] = None
-            self.dictionary[self.adding_es_v(x)] = None
-            self.dictionary[self.adding_ing_v(x)] = None
-        verbs = self.get_words_by_prefix("vv:", True)
-        for x in verbs:
-            self.dictionary[self.adding_es_v(x)] = None
-            self.dictionary[self.adding_ing_v(x)] = None
+            clear_words = dict_e.get_clear_words_by_prefix("all:")
+            for y in clear_words:
+                splited_words = split(" |/|-", y)
+                for z in splited_words:
+                    buff = z.strip(",!?").casefold()
+                    buffer[buff] = None
+            verbs = dict_e.get_words_by_prefix("v:", True)
+            for x in verbs:
+                buffer[self.adding_ed_v(x)] = None
+                buffer[self.adding_es_v(x)] = None
+                buffer[self.adding_ing_v(x)] = None
+            verbs = dict_e.get_words_by_prefix("vv:", True)
+            for x in verbs:
+                buffer[self.adding_es_v(x)] = None
+                buffer[self.adding_ing_v(x)] = None
+            self.data = buffer.keys()
+        else:
+            text_f = TextFilter(file)
+            self.data = text_f.get_words()
+
+
+    def is_dict(self, file_name):
+        """Checks if it's a dictionary, or just a text for
+        a dictionary using."""
+        prefixes = ("n:", "v:", "vv:", "adj:", "adv:", "pre:",
+            "con:", "pro:", "exc:", "int:", "pref:", "s:")
+        matches = 0
+        loop_number = 0
+
+        with open(file_name, "r") as dict:
+            for line in dict:
+                loop_number += 1
+                # if it loops more than tens times and not found
+                # matches it's not a dictionary
+                if loop_number == 10:
+                    return False
+                # checks the template of dictionary if it matches
+                # then we'll check another conditions
+                if line.find(":") != -1 and line.find(";") != -1:
+                    prefix_index = line.find(":")
+                    end = prefix_index + 1
+
+                    if line[:end] in prefixes:
+                        matches += 1
+                    if matches == 3:
+                        return True
+            # if it has less than 10 lines and doesn't found 3 matches
+            # it's not a dictionary
+            return False
 
     def is_double_consonant_v(self, line):
         """for one or two syllable words that end in
@@ -39,9 +77,9 @@ class Dictionary(DictExtractor):
             'sc' : ['sk', 'sh', 's'], 'q' : ['kw']}
         # the ratio of letters and their sounds in transcription
 
-        words_buffer = self.find_word(line).split(" ")
+        words_buffer = self.find_word_in_dict(line).split(" ")
         word = words_buffer[0]
-        transc = self.find_transc(line)
+        transc = self.find_transc_in_dict(line)
         # if words of a verb is more than one
         if len(words_buffer) > 1:
             # if a word ends in consonant-vowel-consonant
@@ -118,7 +156,7 @@ class Dictionary(DictExtractor):
     def adding_ing_v(self, line):
         consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
             'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x']
-        words_buffer = self.find_word(line).split(" ")
+        words_buffer = self.find_word_in_dict(line).split(" ")
         word = words_buffer[0]
 
         # for one or two syllable words that end in
@@ -138,7 +176,7 @@ class Dictionary(DictExtractor):
     def adding_ed_v(self, line):
         consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
             'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x']
-        words_buffer = self.find_word(line).split(" ")
+        words_buffer = self.find_word_in_dict(line).split(" ")
         word = words_buffer[0]
 
         # for one or two syllable words that end in
@@ -163,7 +201,7 @@ class Dictionary(DictExtractor):
             'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x']
         ends_es = ["zz", "ss", "ch", "sh", "x", "go", "do"]
 
-        words_buffer = self.find_word(line).split(" ")
+        words_buffer = self.find_word_in_dict(line).split(" ")
         word = words_buffer[0]
 
         # if words end in any ends_es than add -es
@@ -176,5 +214,33 @@ class Dictionary(DictExtractor):
             word += "s"
         return word
 
+    def find_word_in_dict(self, line):
+        buffer = ""
+        prefix_index = line.find(":")
+        start = prefix_index + 2
+
+        end = line.find(" [")
+        if end != -1:
+            buffer = line[start:end]
+        else:
+            end = line.find(" - ")
+            if end != -1:
+                buffer = line[start:end]
+            else:
+                buffer = line[start:-1]
+        return buffer
+
+    def find_transc_in_dict(self, line):
+        buffer = ""
+        transc_index = line.find(" [")
+        # adding 1 to ignore a whitespace
+        start = transc_index + 1
+        # adding 1 to add a "]" charecter
+        end = line.find("]") + 1
+
+        if transc_index != -1:
+            buffer = line[start:end]
+        return buffer
+
     def get_dictionary(self):
-        return self.dictionary.keys()
+        return self.data

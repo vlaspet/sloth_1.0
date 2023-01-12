@@ -13,6 +13,13 @@ class Finder(TextFilter, Dictionary):
         for x in words:
             if x not in dic:
                 self.new_words.append(x)
-    
+
+    def get_new_words_from_lists(dict, words):
+        buffer = []
+        for x in words:
+            if x not in dict:
+                buffer.append(x)
+        return buffer
+
     def get_new_words(self):
         return self.new_words
