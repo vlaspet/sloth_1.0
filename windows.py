@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.filedialog import askopenfilenames
 from tkinter import messagebox
 from dumper import Dumper
 from create_dict import CreateDict
@@ -29,6 +30,8 @@ class Window:
         # everything from window
         self.sessions = []
         self.current_session = "default"
+        self.current_session_index = 0
+        self.dicts = []
         self.path_text = ""
         self.path_dict = ""
         self.opened_text = False
@@ -39,7 +42,6 @@ class Window:
         self.transc = ""
         self.transl = ""
 
-        self.current_index = 0
 
         self.working_area()
 
@@ -60,6 +62,7 @@ class Window:
         s = """
         sessions - a key for a list of savings names. It's
         saving as a independent part of dump.
+        dicts - files that used for additional dicts
         text - a path for a text.
         dict - a path for a dictionary.
         opened_text - was a text file opened then True.
@@ -133,14 +136,34 @@ class Window:
             self.opened_dict = False
             print("Unknown error.")
 
+        # getting dicts
+        try:
+            self.dicts = self.default_dict["dicts"]
+            self.lst_dicts.delete(0, tk.END)
+            for x in range(len(self.dicts)):
+                name = self.dicts[x]
+                name = name[-name[::-1].find('/') :]
+                self.lst_dicts.insert(x, name)
+        except KeyError as e:
+            self.lst_dicts.delete(0, tk.END)
+            print("Not exists: %s" % e)
+        except:
+            print("Unknown error.")
+
         # getting new words
         try:
-            if self.opened_text and self.opened_dict:
-                f = Finder(self.path_dict, self.path_text)
-                self.new_words = f.get_new_words()
-                self.lst_new_words.delete(0, tk.END)
-                for x in range(len(self.new_words)):
-                    self.lst_new_words.insert(x, self.new_words[x])
+            if self.opened_text:
+                buffer = []
+                if self.opened_dict:
+                    buffer.append(self.path_dict)
+                if len(self.dicts) != 0:
+                    buffer.extend(self.dicts)
+                if len(buffer) != 0:
+                    f = Finder(buffer, self.path_text)
+                    self.new_words = f.get_new_words()
+                    self.lst_new_words.delete(0, tk.END)
+                    for x in range(len(self.new_words)):
+                        self.lst_new_words.insert(x, self.new_words[x])
         except KeyError as e:
             self.lst_new_words.delete(0, tk.END)
             print("Not esists: %s" % e)
@@ -148,6 +171,7 @@ class Window:
             self.lst_new_words.delete(0, tk.END)
             print("Something went wrong!")
 
+        # getting a dict find word
         try:
             self.dict_find_word = self.default_dict["dict_find_word"]
             self.ent_dict_word.delete(0, tk.END)
@@ -239,23 +263,26 @@ class Window:
 
         # showing new words from text
         self.lbl_new_words = tk.Label(self.frm_new_words, text="New words")
-        self.lbl_new_words.grid(row=0, column=0,
-            sticky="wens")
+        self.lbl_new_words.grid(row=0, column=0, sticky="wens")
 
-        self.lst_new_words = tk.Listbox(self.frm_new_words, width=20, height=20)
+        self.lst_new_words = tk.Listbox(self.frm_new_words, width=20,
+            height=20, selectmode=tk.EXTENDED)
         self.lst_new_words.grid(row=1, column=0, sticky="ns")
-        self.lst_new_words.insert(0, "tool")
-        self.lst_new_words.bind("<<ListboxSelect>>", self.lst_selected_word)
+        self.lst_new_words.bind("<<ListboxSelect>>", self.selected_word)
 
         self.btn_new_words = tk.Button(self.frm_new_words,
             text="Show new words", command=self.show_new_words)
         self.btn_new_words.grid(row=2, column=0, sticky="we")
 
+        # words that you know but don't add to dictionary
+        self.btn_new_words = tk.Button(self.frm_new_words,
+            text="Add to buf.txt", command=self.add_to_buf)
+        self.btn_new_words.grid(row=3, column=0, sticky="we")
+
         self.scr_text = tk.Scrollbar(self.frm_new_words, orient='vertical',
             command=self.lst_new_words.yview)
         self.scr_text.grid(row=1, column=1, sticky="ns")
         self.lst_new_words["yscrollcommand"] = self.scr_text.set
-
 
         # The area of filling new words
         self.lbl_pref = tk.Label(self.frm_words, text="Prefix")
@@ -299,19 +326,16 @@ class Window:
 
         #navigation
         self.lbl_savings = tk.Label(self.frm_navig, text="Navigation")
-        self.lbl_savings.grid(row=0, column=0, sticky="we")
+        self.lbl_savings.grid(row=5, column=0, sticky="we")
 
         self.btn_open_text = tk.Button(self.frm_navig, text="Text",
             command=self.open_text)
-        self.btn_open_text.grid(row=5, column=0, sticky="we")
+        self.btn_open_text.grid(row=6, column=0, sticky="we")
         self.btn_open_text.rowconfigure(1, weight=0)
 
         self.btn_open_dict = tk.Button(self.frm_navig, text="Dictionary",
             command=self.open_dict)
-        self.btn_open_dict.grid(row=6, column=0, sticky="we")
-
-        self.btn_add_dict = tk.Button(self.frm_navig, text="Add dict")
-        self.btn_add_dict.grid(row=7, column=0, sticky="we")
+        self.btn_open_dict.grid(row=7, column=0, sticky="we")
 
         self.btn_clear_fields = tk.Button(self.frm_navig,
             text="Clear fields", command=self.clear_fields)
@@ -342,20 +366,58 @@ class Window:
 
         self.lst_dicts = tk.Listbox(self.frm_navig, width=15, height=5)
         self.lst_dicts.grid(row=1, column=1)
-
-        self.ent_dicts = tk.Entry(self.frm_navig, width=15)
-        self.ent_dicts.grid(row=3, column=1)
+        # self.lst_dicts.bind("<<ListboxSelect>>", self.selected_dict)
 
         self.btn_dicts_delete = tk.Button(self.frm_navig, text="Delete",
-            command=self.delete_session)
+            command=self.delete_dict)
         self.btn_dicts_delete.grid(row=2, column=1, sticky="we")
 
-        self.btn_dicts_save = tk.Button(self.frm_navig, text="Add",
-            command=self.save_session)
-        self.btn_dicts_save.grid(row=4, column=1, sticky="we")
+        self.btn_dicts_add = tk.Button(self.frm_navig, text="Add",
+            command=self.add_dict)
+        self.btn_dicts_add.grid(row=3, column=1, sticky="we")
+
+    def add_to_buf(self):
+        line = ""
+        try:
+            with open("buf.txt", "r", encoding="utf-8") as file:
+                line = file.read()
+                line += '\n'
+        except IOError as e:
+            print(e)
+        with open("buf.txt", "w", encoding="utf-8") as file:
+            indexes = self.lst_new_words.curselection()
+            buffer = []
+            for x in indexes[::-1]:
+                buffer.append(self.lst_new_words.get(x))
+                self.lst_new_words.delete(x)
+            line += "\n".join(buffer)
+            file.write(line)
+
+    def delete_dict(self):
+        index = self.lst_dicts.curselection()[0]
+        self.dicts.pop(index)
+        if len(self.dicts) > 0:
+            self.dump.save_data(self.dicts, "dicts")
+        else:
+            self.dump.delete("dicts")
+
+        self.lst_dicts.delete(0, tk.END)
+        for x in range(len(self.dicts)):
+            name = self.dicts[x]
+            name = name[-name[::-1].find('/') :]
+            self.lst_dicts.insert(x, name)
 
     def add_dict(self):
-        pass
+        filepath = askopenfilename(
+            filetypes=[("Text file", "*.txt"), ("All files", "*.*")]
+        )
+        if not filepath:
+            return None
+        # we're searching from the end first a '/' match and
+        # take beginning from the end of the filepath
+        file_name = filepath[-filepath[::-1].find('/') :]
+        self.dicts.append(filepath)
+        self.lst_dicts.insert(tk.END, file_name)
 
     def clear_fields(self):
         self.ent_pref.delete(0, tk.END)
@@ -370,12 +432,18 @@ class Window:
     def show_new_words(self):
         """Shows new words from checking the current open dict
         and text."""
-        if self.opened_text and self.opened_dict:
-            f = Finder(self.path_dict, self.path_text)
-            self.new_words = f.get_new_words()
-            self.lst_new_words.delete(0, tk.END)
-            for x in range(len(self.new_words)):
-                self.lst_new_words.insert(x, self.new_words[x])
+        if self.opened_text:
+            buffer = []
+            if self.opened_dict:
+                buffer.append(self.path_dict)
+            if len(self.dicts) != 0:
+                buffer.extend(self.dicts)
+            if len(buffer) != 0:
+                f = Finder(buffer, self.path_text)
+                self.new_words = f.get_new_words()
+                self.lst_new_words.delete(0, tk.END)
+                for x in range(len(self.new_words)):
+                    self.lst_new_words.insert(x, self.new_words[x])
 
     def add_word(self):
         pref = self.ent_pref.get().strip(" ")
@@ -432,8 +500,8 @@ class Window:
         self.txt_dict.see(tk.END)
 
     def delete_session(self):
-        self.dump.delete(self.sessions[self.current_index])
-        self.sessions.pop(self.current_index)
+        self.dump.delete(self.sessions[self.current_session_index])
+        self.sessions.pop(self.current_session_index)
         if len(self.sessions) > 0:
             self.dump.save_data(self.sessions, "sessions")
         else:
@@ -444,15 +512,16 @@ class Window:
             self.lst_savings.insert(x, self.sessions[x])
 
     def select_savings(self, event):
-        self.current_index = self.lst_savings.curselection()[0]
+        self.current_session_index = self.lst_savings.curselection()[0]
 
-        session = self.lst_savings.get(self.current_index)
+        session = self.lst_savings.get(self.current_session_index)
         self.current_session = session
         self.init_sloth(self.dump.get_dump_data(session))
     
     def get_current_data(self):
         current_data = {}
 
+        current_data["dicts"] = self.dicts
         current_data["text"] = self.path_text
         current_data["dict"] = self.path_dict
         current_data["opened_text"] = self.opened_text
@@ -478,7 +547,7 @@ class Window:
         else:
             self.current_session = session
             self.lst_savings.insert(index, session)
-            self.current_index = index
+            self.current_session_index = index
             self.sessions.append(session)
             self.dump.save_data(self.get_current_data(),
                 self.current_session)
@@ -492,7 +561,7 @@ class Window:
 
     def session_up(self):
         l = [x for x in range(self.lst_savings.size())]
-        item = self.sessions.pop(self.current_index)
+        item = self.sessions.pop(self.current_session_index)
         self.sessions.insert(0, item)
         self.dump.save_data(self.sessions, "sessions")
         self.lst_savings.delete(0, tk.END)
@@ -530,7 +599,7 @@ class Window:
             text = file.read()
             self.txt_dict.insert(tk.END, text)
 
-    def lst_selected_word(self, event):
+    def selected_word(self, event):
         index = self.lst_new_words.curselection()[0]
         word = self.lst_new_words.get(index)
 

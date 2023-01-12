@@ -170,9 +170,3 @@ class DictExtractor:
         if prefix_index != -1:
             buffer = line[:end]
         return buffer
-
-d = DictExtractor("dict.txt")
-
-l = d.get_data()
-for x in l:
-    print(d.find_transc(x))
