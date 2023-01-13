@@ -284,7 +284,7 @@ adv: seemingly ['s] - по-видимому;
 adv: anyway ['-en] - в любом случае;
 adv: alternatively [o:l'tз:n-et];
 s: aren't quite - не совсем так;
- *_4_*
+*_4_*
 n: liberty ['lиb-erti] - свобода;
 n: document ['dao];
 n: intern [иn'tз:n] - стажор;

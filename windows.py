@@ -141,9 +141,12 @@ class Window:
             self.dicts = self.default_dict["dicts"]
             self.lst_dicts.delete(0, tk.END)
             for x in range(len(self.dicts)):
-                name = self.dicts[x]
-                name = name[-name[::-1].find('/') :]
-                self.lst_dicts.insert(x, name)
+                if self.dicts[x] == "buf.txt":
+                    self.lst_dicts.insert(x, self.dicts[x])
+                else:
+                    name = self.dicts[x]
+                    name = name[-name[::-1].find('/') :]
+                    self.lst_dicts.insert(x, name)
         except KeyError as e:
             self.lst_dicts.delete(0, tk.END)
             print("Not exists: %s" % e)
@@ -376,6 +379,13 @@ class Window:
             command=self.add_dict)
         self.btn_dicts_add.grid(row=3, column=1, sticky="we")
 
+        self.btn_dicts_merge = tk.Button(self.frm_navig, text="Merge dicts",
+            command=self.merge_dicts)
+        self.btn_dicts_merge.grid(row=4, column=1, sticky="we")
+
+    def merge_dicts(self):
+        pass
+
     def add_to_buf(self):
         line = ""
         try:
@@ -393,19 +403,23 @@ class Window:
             line += "\n".join(buffer)
             file.write(line)
 
+        try:
+            self.dicts.index("buf.txt")
+        except ValueError as e:
+            self.dicts.append("buf.txt")
+            self.lst_dicts.insert(tk.END, "buf.txt")
+            self.save_session()
+
     def delete_dict(self):
         index = self.lst_dicts.curselection()[0]
         self.dicts.pop(index)
-        if len(self.dicts) > 0:
-            self.dump.save_data(self.dicts, "dicts")
-        else:
-            self.dump.delete("dicts")
 
         self.lst_dicts.delete(0, tk.END)
         for x in range(len(self.dicts)):
             name = self.dicts[x]
             name = name[-name[::-1].find('/') :]
             self.lst_dicts.insert(x, name)
+        self.save_session()
 
     def add_dict(self):
         filepath = askopenfilename(
@@ -418,6 +432,7 @@ class Window:
         file_name = filepath[-filepath[::-1].find('/') :]
         self.dicts.append(filepath)
         self.lst_dicts.insert(tk.END, file_name)
+        self.save_session()
 
     def clear_fields(self):
         self.ent_pref.delete(0, tk.END)
@@ -428,6 +443,21 @@ class Window:
         self.lst_new_words.delete(0, tk.END)
         self.txt_dict.delete("1.0", tk.END)
         self.txt_text.delete("1.0", tk.END)
+
+    def clear_data(self):
+        self.sessions = []
+        self.current_session = "default"
+        self.current_session_index = 0
+        self.dicts = []
+        self.path_text = ""
+        self.path_dict = ""
+        self.opened_text = False
+        self.opened_dict = False
+        self.new_words = []
+        self.dict_find_word = ""
+        self.word = ""
+        self.transc = ""
+        self.transl = ""
 
     def show_new_words(self):
         """Shows new words from checking the current open dict
@@ -506,6 +536,9 @@ class Window:
             self.dump.save_data(self.sessions, "sessions")
         else:
             self.dump.delete("sessions")
+            self.clear_fields()
+            self.lst_dicts.delete(0, tk.END)
+            self.clear_data()
 
         self.lst_savings.delete(0, tk.END)
         for x in range(len(self.sessions)):
