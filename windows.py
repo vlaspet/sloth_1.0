@@ -5,6 +5,7 @@ from tkinter import messagebox
 from dumper import Dumper
 from create_dict import CreateDict
 from finder import Finder
+from dictionary import Dictionary
 import copy
 
 class Window:
@@ -384,7 +385,16 @@ class Window:
         self.btn_dicts_merge.grid(row=4, column=1, sticky="we")
 
     def merge_dicts(self):
-        pass
+        buffer = {}
+        for x in self.dicts:
+            for y in Dictionary(x).get_dictionary():
+                buffer[y] = None
+        with open("buf.txt", "w", encoding="utf-8") as file:
+            file.write("\n".join(buffer.keys()))
+        self.dicts = ["buf.txt"]
+        self.lst_dicts.delete(0, tk.END)
+        self.lst_dicts.insert(0, self.dicts[0])
+        self.save_session()
 
     def add_to_buf(self):
         line = ""
@@ -443,8 +453,8 @@ class Window:
         self.lst_new_words.delete(0, tk.END)
         self.txt_dict.delete("1.0", tk.END)
         self.txt_text.delete("1.0", tk.END)
+        self.lst_dicts.delete(0, tk.END)
 
-    def clear_data(self):
         self.sessions = []
         self.current_session = "default"
         self.current_session_index = 0
@@ -537,8 +547,6 @@ class Window:
         else:
             self.dump.delete("sessions")
             self.clear_fields()
-            self.lst_dicts.delete(0, tk.END)
-            self.clear_data()
 
         self.lst_savings.delete(0, tk.END)
         for x in range(len(self.sessions)):

@@ -4,11 +4,11 @@ class DictExtractor:
         self.buffer = []
         self.data_dict = {}
 
-        with open(file, "r") as dict:
+        with open(file, "r", encoding="utf-8") as dict:
             for line in dict:
                 if line.find(":") != -1 and line.find(";") != -1:
                     self.data.append(line.strip())
-        
+            # dict.close()
         for x in self.data:
             transc_index = x.find(" [")
             transl_index = x.find(" - ")

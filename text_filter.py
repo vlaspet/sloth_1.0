@@ -21,6 +21,6 @@ class TextFilter:
                     buff = buffer[0]
                     dict_buff[buff] = None
             self.data = dict_buff.keys()
-            dict.close()
+            # dict.close()
     def get_words(self):
         return self.data
