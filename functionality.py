@@ -493,31 +493,6 @@ class Functionality(Window):
         
         self.text_find_txt(word)
 
-    def open_file(self):
-        self.text_find_word = ""
-        self.dict_find_word = ""
-
-        filepath = askopenfilename(
-            filetypes=[("Text file", "*.txt"), ("All files", "*.*")]
-        )
-        if not filepath:
-            return None
-        self.txt_text.delete("1.0", tk.END)
-        with open(filepath, "r", encoding="utf-8") as file:
-            text = file.read()
-            self.txt_text.insert(tk.END, text)
-            self.window.title(f"simple text editor - {filepath}")
-
-    def save_file(self):
-        filepath = asksaveasfilename(
-            filetypes=[("Text file", "*.txt"), ("All files", "*.*")]
-        )
-        if not filepath:
-            return None
-        with open(filepath, "w", encoding="utf-8") as file:
-            text = self.txt_text.get("1.0", tk.END)
-            file.write(text)
-
     def text_find_txt(self, word):
         """It's finding only whole words in the text.
         """
