@@ -46,7 +46,6 @@ class Dictionary:
                 # if it loops more than tens times and not found
                 # matches it's not a dictionary
                 if loop_number == 10:
-                    print(False)
                     return False
                 # checks the template of dictionary if it matches
                 # then we'll check another conditions
@@ -57,11 +56,9 @@ class Dictionary:
                     if line[:end] in prefixes:
                         matches += 1
                     if matches == 3:
-                        print(True)
                         return True
             # if it has less than 10 lines and doesn't found 3 matches
             # it's not a dictionary
-            print(False)
             return False
 
     def is_double_consonant_v(self, line):
