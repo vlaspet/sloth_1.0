@@ -1,6 +1,7 @@
 import tkinter as tk
-from tkinter.filedialog import askopenfilename, asksaveasfilename
+from tkinter.filedialog import askopenfilename
 from tkinter import messagebox
+
 from dumper import Dumper
 from create_dict import CreateDict
 from finder import Finder
@@ -8,9 +9,14 @@ from dictionary import Dictionary
 from windows import Window
 
 class Functionality(Window):
-    def __init__(self, dump, create_d):
+    def __init__(self):
+        # initializing Window
         Window.__init__(self)
 
+        self.dump = Dumper("dump.pickle")
+        self.create_d = CreateDict()
+
+        # current prefixes in my dictionary
         self.prefixes = ["n:", "v:", "vv:", "adj:", "adv:", "pre:",
             "con:", "pro:", "exc:", "int:", "pref:", "s:"]
 
@@ -19,15 +25,10 @@ class Functionality(Window):
         self.text_next_index = 0
         self.text_find_word = ""
 
-        # for finding in text every whole word
+        # for finding in dict every whole word
         self.dict_word_indexes = []
         self.dict_next_index = 0
         self.dict_find_word = ""
-
-        # dumper
-        self.dump = dump
-        self.create_d = create_d
-        # dump.clear_dump()
 
         # everything from window
         self.sessions = []
@@ -46,6 +47,7 @@ class Functionality(Window):
 
         self.init_sloth()
 
+        # to start mainloop() for window
         self.start()
 
     def help(self):
@@ -350,29 +352,43 @@ class Functionality(Window):
         self.lst_new_words.delete(idx_new_word)
         self.new_words.pop(idx_new_word)
 
-        # the start and the end index of the last block of 200 words
-        end_idx = self.txt_dict.search("[1-9]\n", index=tk.END, backwards=True,
-            regexp=True)
-        end_idx = end_idx.split(".")[0] + '.' + str(int(end_idx.split(".")[1]) + 1)
-        start_idx = end_idx.split(".")[0] + ".0"
+        # if txt_dict is empty than we create a new dict from 1 dict index
+        if self.txt_dict.get("1.0", tk.END) != '\n':
+            # the start and the end index of the last block of 200 words
+            end_idx = self.txt_dict.search("[1-9]\n", index=tk.END,
+                backwards=True, regexp=True)
+            end_idx = end_idx.split(".")[0] + '.' + str(
+                int(end_idx.split(".")[1]) + 1)
+            start_idx = end_idx.split(".")[0] + ".0"
+
+            # a number of the current 200 words block
+            dict_idx = int(self.txt_dict.get(start_idx, end_idx))
+
+            # to get words from that 200 words block and add a new word
+            for line in self.txt_dict.get(start_idx, tk.END).split('\n'):
+                if line.find(":") != -1 and line.find(";") != -1:
+                    buffer.append(line.strip())
+            buffer.append(new_line)
         
-        # a number of the current 200 words block
-        dict_idx = int(self.txt_dict.get(start_idx, end_idx))
+            buffer = self.create_d.shuffle_by_25_words(buffer)
+            buffer = self.create_d.set_dict(dict_idx, buffer)
 
-        # to get words from that 200 words block and add a new word
-        for line in self.txt_dict.get(start_idx, tk.END).split('\n'):
-            if line.find(":") != -1 and line.find(";") != -1:
-                buffer.append(line.strip())
-        buffer.append(new_line)
+            self.txt_dict.delete(start_idx, tk.END)
 
-        buffer = self.create_d.shuffle_by_25_words(buffer)
-        buffer = self.create_d.set_dict(dict_idx, buffer)
+            if start_idx == "1.0":
+                new_line = "".join(buffer)
+            else:
+                new_line = '\n' + "".join(buffer)
 
-        self.txt_dict.delete(start_idx, tk.END)
+            self.txt_dict.insert(tk.END, new_line)
+            self.txt_dict.see(tk.END)
 
-        new_line = '\n' + "".join(buffer)
-        self.txt_dict.insert(tk.END, new_line)
-        self.txt_dict.see(tk.END)
+            print(start_idx)
+        else:
+            print(self.txt_dict.get("1.0", tk.END))
+            buffer = self.create_d.set_dict(1, [new_line])
+            new_line = "".join(buffer)
+            self.txt_dict.insert(tk.END, new_line)
 
     def delete_session(self):
         self.dump.delete(self.sessions[self.current_session_index])
@@ -416,6 +432,21 @@ class Functionality(Window):
         session = self.ent_savings.get()
         self.ent_savings.delete(0, tk.END)
 
+        # save new data in dict
+        filepath = self.dump.get_dump_data(self.current_session)["dict"]
+        
+        # because after clearing data in current session address to "dict"
+        # is not existing. And we're checking if it's existing.
+        if filepath != '':
+            with open(filepath, 'w', encoding='utf-8') as file:
+                file.write(self.txt_dict.get("1.0", tk.END).strip())
+        
+        if filepath == '' and self.txt_dict.get("1.0", tk.END) != '\n':
+            self.path_dict = 'dictionary.txt'
+            with open('dictionary.txt', 'w', encoding='utf-8') as file:
+                file.write(self.txt_dict.get("1.0", tk.END).strip())    
+                
+                 
         if session == '':
             self.dump.save_data(self.get_current_data(),
                 self.current_session)
@@ -429,14 +460,6 @@ class Functionality(Window):
                 self.current_session)
             self.session_up()
 
-        # save new data in dict
-        filepath = self.dump.get_dump_data(self.current_session)["dict"]
-        
-        # because after clearing data in current session address to "dict"
-        # is not existing. And we're checking if it's existing.
-        if filepath != '':
-            with open(filepath, 'w', encoding='utf-8') as file:
-                file.write(self.txt_dict.get("1.0", tk.END).strip())
 
     def session_up(self):
         l = [x for x in range(self.lst_savings.size())]
@@ -599,7 +622,3 @@ class Functionality(Window):
             self.dict_next_index = 1
             self.txt_dict.see(self.dict_word_indexes[0])
 
-d = Dumper("dump.pickle")
-c_d = CreateDict()
-
-w = Functionality(d, c_d)
