@@ -51,6 +51,7 @@ class Functionality(Window):
         self.start()
 
     def help(self):
+        """A help about a program."""
         print("Names for every part of the window!")
         s = """
         sessions - a key for a list of savings names. It's
@@ -70,6 +71,7 @@ class Functionality(Window):
         print(s)
 
     def init_sloth(self):
+        """Initialising sloth."""
         if len(self.sessions) == 0:
             try:
                 self.sessions = self.dump.get_dump_data("sessions")
@@ -94,33 +96,44 @@ class Functionality(Window):
 
         # initializing lst_savings by existing sessions
         try:
+            # first of all you clear savings
             self.lst_savings.delete(0, tk.END)
+            # inserting from a first index
             for x in range(len(self.sessions)):
                 self.lst_savings.insert(x, self.sessions[x])
         except KeyError as e:
+            self.lst_savings.delete(0, tk.END)
             print("Not exists: %s" % e)
 
         # initializing text
         try:
             self.path_text = self.default_dict["text"]
-            # IT'S NOT A COPY
+            # we opened that file
             with open(self.path_text, "r", encoding="utf-8") as file:
+                # cleared the area
                 self.txt_text.delete("1.0", tk.END)
+                # insert the data
                 self.txt_text.insert(tk.END, file.read())
+                # I need to know if a text file is opened
                 self.opened_text = True
         except KeyError as e:
+            # KeyError it's about a dict {}
+            # if some error is occured it's not opened
             self.opened_text = False
             print("Not exists: %s" % e)
         except IOError as e:
+            # IOError if something wrong with opening a file
             self.opened_text = False
             self.txt_text.delete("1.0", tk.END)
             print("Not found a TEXT file: %s" % e)
         except:
+            # any error
             self.opened_text = False
             print("Unknown error.")
 
         # initializing dictionary
         try:
+            # the same situation like in a previous block of a code
             self.path_dict = self.default_dict["dict"]
             with open(self.path_dict, "r", encoding="utf-8") as file:
                 self.txt_dict.delete("1.0", tk.END)
@@ -140,18 +153,27 @@ class Functionality(Window):
         # getting dicts
         try:
             self.dicts = self.default_dict["dicts"]
+            # cleared the area
             self.lst_dicts.delete(0, tk.END)
             for x in range(len(self.dicts)):
+                # it's because you can add any dict in any location
+                # but in dicts you're saving not a name, but an address
+                # to a dict. Exception is "buf.txt" if you create it 
+                # by yourself
                 if self.dicts[x] == "buf.txt":
                     self.lst_dicts.insert(x, self.dicts[x])
                 else:
                     name = self.dicts[x]
+                    # it's searching backwards a first slash and we take
+                    # a string from the last slash to the end. That's a
+                    # name of the file in a path
                     name = name[-name[::-1].find('/') :]
                     self.lst_dicts.insert(x, name)
         except KeyError as e:
             self.lst_dicts.delete(0, tk.END)
             print("Not exists: %s" % e)
         except:
+            self.lst_dicts.delete(0, tk.END)
             print("Unknown error.")
 
         # getting new words
@@ -161,14 +183,19 @@ class Functionality(Window):
 
             if self.opened_text:
                 buffer = []
+                # we're adding a dict if it's opened to the list of dicts
+                # or using it like a major dict if we aren't added some
                 if self.opened_dict:
                     buffer.append(self.path_dict)
                 if len(self.dicts) != 0:
                     buffer.extend(self.dicts)
+                # if dict's list is not empty we're adding new words
                 if len(buffer) != 0:
-                    f = Finder(buffer, self.path_text)
-                    self.new_words = f.get_new_words()
+                    self.new_words = Finder(buffer,
+                        self.path_text).get_new_words()
+                    # clearing the area
                     self.lst_new_words.delete(0, tk.END)
+                    # showed new words
                     for x in range(len(self.new_words)):
                         self.lst_new_words.insert(x, self.new_words[x])
         except KeyError as e:
@@ -225,56 +252,83 @@ class Functionality(Window):
 
     
     def merge_dicts(self):
+        """Merge all dicts that was opened. Except a current dict
+        that was opened in a window."""
         buffer = {}
+        # getting all words from dicts that was added in a buffer
         for x in self.dicts:
             for y in Dictionary(x).get_dictionary():
                 buffer[y] = None
+        # open or create buf.txt and adding words from that dict
         with open("buf.txt", "w", encoding="utf-8") as file:
             file.write("\n".join(buffer.keys()))
+        # reinitializing dicts with only this buf.txt file with new words
         self.dicts = ["buf.txt"]
         self.lst_dicts.delete(0, tk.END)
         self.lst_dicts.insert(0, self.dicts[0])
+        # saving a session with a new data
         self.save_session()
 
     def add_to_buf(self):
-        line = ""
+        """Adding (to "buf.txt" file) words that you know."""
+        # new words that will be added
+        buffer_line = ""
+        # if the file exist then we take all text from that file
+        # to buffer_line
         try:
             with open("buf.txt", "r", encoding="utf-8") as file:
-                line = file.read()
-                line += '\n'
+                buffer_line = file.read()
+                buffer_line += '\n'
         except IOError as e:
             print(e)
+        # if doesn't exist then we create one
         with open("buf.txt", "w", encoding="utf-8") as file:
+            # we're getting a tuple of indexes of the highlighted words
             indexes = self.lst_new_words.curselection()
             buffer = []
+            # we starts backwards because after deleting from the
+            # beginning it shifts to the beginning and indexes is anymore
+            # actual
             for x in indexes[::-1]:
                 buffer.append(self.lst_new_words.get(x))
                 self.lst_new_words.delete(x)
-            line += "\n".join(buffer)
-            file.write(line)
+            # adding all words with \n character
+            buffer_line += "\n".join(buffer)
+            file.write(buffer_line)
 
+        # if buf.txt is not existing in dicts then we're adding it
+        # and in lst_dicts also
         try:
             self.dicts.index("buf.txt")
         except ValueError as e:
             self.dicts.append("buf.txt")
             self.lst_dicts.insert(tk.END, "buf.txt")
+            # saving changes to a current session
             self.save_session()
 
     def delete_dict(self):
+        """Delete an added dict earlier."""
+        # getting a highlighted dict and delete it from dicts
         index = self.lst_dicts.curselection()[0]
         self.dicts.pop(index)
 
         self.lst_dicts.delete(0, tk.END)
         for x in range(len(self.dicts)):
             name = self.dicts[x]
+            # it's searching backwards a first slash and we take
+            # a string from the last slash to the end. That's a
+            # name of the file in a path
             name = name[-name[::-1].find('/') :]
             self.lst_dicts.insert(x, name)
+        # saving changes
         self.save_session()
 
     def add_dict(self):
+        """Adding a aditional dict"""
         filepath = askopenfilename(
             filetypes=[("Text file", "*.txt"), ("All files", "*.*")]
         )
+        # if you wasn't choosing a file exiting from a function
         if not filepath:
             return None
         # we're searching from the end first a '/' match and
@@ -285,6 +339,7 @@ class Functionality(Window):
         self.save_session()
 
     def clear_fields(self):
+        """Clearing fields"""
         self.ent_pref.delete(0, tk.END)
         self.ent_word.delete(0, tk.END)
         self.ent_transc.delete(0, tk.END)
@@ -316,30 +371,35 @@ class Functionality(Window):
             if len(self.dicts) != 0:
                 buffer.extend(self.dicts)
             if len(buffer) != 0:
-                f = Finder(buffer, self.path_text)
-                self.new_words = f.get_new_words()
+                self.new_words = Finder(buffer,
+                    self.path_text).get_new_words()
                 self.lst_new_words.delete(0, tk.END)
                 for x in range(len(self.new_words)):
                     self.lst_new_words.insert(x, self.new_words[x])
 
     def add_word(self):
+        """Adding a word to the dictionary."""
+        # getting a data from fields
         pref = self.ent_pref.get().strip(" ")
         word = self.ent_word.get().strip(" ")
         transc = self.ent_transc.get().strip(" ")
         transl = self.ent_transl.get().strip(" ")
         buffer = []
 
+        # checking if a prefix is correct
         if f"{pref}:" in self.prefixes:
-            if transc == "" and transl == "":
+            # minimum a pref and a word you need to add 
+            # a word
+            if word == "":
+                messagebox.showwarning("warning",
+                    "You can't add words without a word!")
+                return None
+            elif transc == "" and transl == "":
                 new_line = f"{pref}: {word};"
             elif transc == "":
                 new_line = f"{pref}: {word} - {transl};"
             elif transl == "":
                 new_line = f"{pref}: {word} [{transc}];"
-            elif pref == "" or word == "":
-                messagebox.showwarning("warning",
-                    "You can't add words without a prefix or a word!")
-                return None
             else:
                 new_line = f"{pref}: {word} [{transc}] - {transl};"
         else:
@@ -370,40 +430,51 @@ class Functionality(Window):
                     buffer.append(line.strip())
             buffer.append(new_line)
         
+            # shuffles words by a chosen order
             buffer = self.create_d.shuffle_by_25_words(buffer)
+            # and create a dict
             buffer = self.create_d.set_dict(dict_idx, buffer)
 
+            # delete a previous 200 words
             self.txt_dict.delete(start_idx, tk.END)
 
+            # if a start index is 1.0 then without a '\n'
             if start_idx == "1.0":
                 new_line = "".join(buffer)
             else:
                 new_line = '\n' + "".join(buffer)
 
+            # inseting in the end and focusing on the end
             self.txt_dict.insert(tk.END, new_line)
             self.txt_dict.see(tk.END)
-
-            print(start_idx)
         else:
-            print(self.txt_dict.get("1.0", tk.END))
+            # setting a new dict from a first index
             buffer = self.create_d.set_dict(1, [new_line])
             new_line = "".join(buffer)
             self.txt_dict.insert(tk.END, new_line)
 
     def delete_session(self):
+        """Deleting a highlighted session."""
+        # deleting a highlighted session from sessions and a session
+        # in a dump
         self.dump.delete(self.sessions[self.current_session_index])
         self.sessions.pop(self.current_session_index)
         if len(self.sessions) > 0:
+            # resaving a session
             self.dump.save_data(self.sessions, "sessions")
         else:
+            # if sessions is 0 size. We delete sessions and clear all fields
             self.dump.delete("sessions")
             self.clear_fields()
 
+        # refill lst savings with a new data
         self.lst_savings.delete(0, tk.END)
         for x in range(len(self.sessions)):
             self.lst_savings.insert(x, self.sessions[x])
 
     def select_savings(self, event):
+        """For jumping from a session to a session"""
+        # it's for a session_up function to know what index to delete
         self.current_session_index = self.lst_savings.curselection()[0]
 
         session = self.lst_savings.get(self.current_session_index)
@@ -411,6 +482,7 @@ class Functionality(Window):
         self.init_sloth()
     
     def get_current_data(self):
+        """Getting current data and returns a dict with the data."""
         current_data = {}
 
         current_data["dicts"] = self.dicts
@@ -428,8 +500,11 @@ class Functionality(Window):
         return current_data
    
     def save_session(self):
+        """Saving a new session or resaving a current session."""
+        # getting the last index of the session in lst_savings
         index = self.lst_savings.index(tk.END)
         session = self.ent_savings.get()
+        # clearing of the entry field
         self.ent_savings.delete(0, tk.END)
 
         # save new data in dict
@@ -438,15 +513,19 @@ class Functionality(Window):
         # because after clearing data in current session address to "dict"
         # is not existing. And we're checking if it's existing.
         if filepath != '':
+            # saving the data to the dictionary
             with open(filepath, 'w', encoding='utf-8') as file:
                 file.write(self.txt_dict.get("1.0", tk.END).strip())
         
+        # if we added data to the dictionary but a dictionary was not
+        # opened. We'll create "dictionary.txt"
         if filepath == '' and self.txt_dict.get("1.0", tk.END) != '\n':
             self.path_dict = 'dictionary.txt'
             with open('dictionary.txt', 'w', encoding='utf-8') as file:
                 file.write(self.txt_dict.get("1.0", tk.END).strip())    
-                
-                 
+
+        # actually saving a session to the dump or resaving if it's
+        # existing now
         if session == '':
             self.dump.save_data(self.get_current_data(),
                 self.current_session)
@@ -462,10 +541,13 @@ class Functionality(Window):
 
 
     def session_up(self):
-        l = [x for x in range(self.lst_savings.size())]
+        """It's up a session in lst_savings after saving"""
+        # to delete an item from current place and insert into the beginning
         item = self.sessions.pop(self.current_session_index)
         self.sessions.insert(0, item)
+        # resaving sessions because an order was changed
         self.dump.save_data(self.sessions, "sessions")
+        # clearing and showind sessions in the right order
         self.lst_savings.delete(0, tk.END)
         for x in range(len(self.sessions)):
             self.lst_savings.insert(x, self.sessions[x])
