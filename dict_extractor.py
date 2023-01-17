@@ -1,101 +1,74 @@
 class DictExtractor:
     def __init__(self, file):
         self.data = []
-        self.buffer = []
-        self.data_dict = {}
 
         with open(file, "r", encoding="utf-8") as dict:
             for line in dict:
+                # adding a word only when two conditions preformed
                 if line.find(":") != -1 and line.find(";") != -1:
                     self.data.append(line.strip())
-            # dict.close()
-        for x in self.data:
-            transc_index = x.find(" [")
-            transl_index = x.find(" - ")
-            prefix_index = x.find(":") + 1
-            start_0 = prefix_index + 1
-            # start_0 - starts after index
-            start_1 = transc_index + 1
-            # start_1 - starts from transcription
-            end_1 = x.find("]") + 1
-            # end_1 - the end of transcription
-            start_2 = transl_index + 3
-            # start_2 - the begening of a russion word
-
-            if transc_index != -1 and transl_index != -1:
-                self.data_dict[x[start_0:transc_index]] = [x[start_1:end_1],
-                    x[start_2:-1], x[:prefix_index]]
-            elif transc_index != -1:
-                self.data_dict[x[start_0:transc_index]] = [x[start_1:end_1],
-                    "None", x[:prefix_index]]
-            elif transl_index != -1:
-                self.data_dict[x[start_0:transl_index]] = ["None",
-                    x[start_2:-1], x[:prefix_index]]
-
     
     def get_data(self):
+        """Getting data from dict."""
         return self.data
-    def get_dict_data(self):
-        """Gets dictionary of words"""
-        return self.data_dict
 
     def get_words_by_prefix(self, prefix, with_prefix):
         """Gets words by a prefix
             with_prefix - with or withou prefixes"""
-        self.buffer = []
+        buffer = []
         index = len(prefix)
         start = index + 1
         for x in self.data:
             if x[:index].find(prefix) != -1:
-                self.buffer.append(x if with_prefix else x[start:])
+                buffer.append(x if with_prefix else x[start:])
             elif prefix == "all:":
                 start = x.find(":") + 2
-                self.buffer.append(x if with_prefix else x[start:])
-        return self.buffer
+                buffer.append(x if with_prefix else x[start:])
+        return buffer
 
     def get_list_words_by_prefix(self, list, prefix, with_prefix):
         """Gets words by a prefix
             with_prefix - with or withou prefixes"""
-        self.buffer = []
+        buffer = []
         index = len(prefix)
         start = index + 1
         for x in list:
             if x[:index].find(prefix) != -1:
-                self.buffer.append(x if with_prefix else x[start:])
+                buffer.append(x if with_prefix else x[start:])
             elif prefix == "all:":
                 start = x.find(":") + 2
-                self.buffer.append(x if with_prefix else x[start:])
-        return self.buffer
+                buffer.append(x if with_prefix else x[start:])
+        return buffer
 
     def get_clear_words_by_prefix(self, prefix):
         """Gets words by a prefix
             with_prefix - with or withou prefixes"""
-        self.buffer = []
+        buffer = []
         index = len(prefix)
         start = index + 1
         for x in self.data:
             if x[:index].find(prefix) != -1:
                 end = x.find(" [")
                 if end != -1:
-                    self.buffer.append(x[start:end])
+                    buffer.append(x[start:end])
                 else:
                     end = x.find(" - ")
                     if end != -1:
-                        self.buffer.append(x[start:end])
+                        buffer.append(x[start:end])
                     else:
-                        self.buffer.append(x[start:-1])
+                        buffer.append(x[start:-1])
             elif prefix == "all:":
                 start = x.find(":") + 2
                 end = x.find(" [")
                 if end != -1:
-                    self.buffer.append(x[start:end])
+                    buffer.append(x[start:end])
                 else:
                     end = x.find(" - ")
                     if end != -1:
-                        self.buffer.append(x[start:end])
+                        buffer.append(x[start:end])
                     else:
-                        self.buffer.append(x[start:-1])
-        return self.buffer
+                        buffer.append(x[start:-1])
+        return buffer
 
     def get_word_inf(self, word, index):
         """It gets information about a word that you wrote.
@@ -116,10 +89,11 @@ class DictExtractor:
             return buffer_str.strip()
 
     def show_data(self):
-        length = len(self.data)
-        for x in range(length):
-            print(self.data[x])
-        print(length)
+        """Showing data."""
+        for x in self.data:
+            print(x)
+        print(len(self.data))
+
     def show_all_prefixes(self):
         """Shows all prefixes and them meaning"""
         lst = ["n: nouns", "v: verbs", "vv: irregular verbs",
@@ -131,6 +105,7 @@ class DictExtractor:
             print(x)
 
     def find_word(self, line):
+        """Finding a word in a dict line."""
         buffer = ""
         prefix_index = line.find(":")
         start = prefix_index + 2
@@ -145,7 +120,9 @@ class DictExtractor:
             else:
                 buffer = line[start:-1]
         return buffer
+
     def find_transc(self, line):
+        """Finding a transcription in a dict line."""
         buffer = ""
         transc_index = line.find(" [")
         start = transc_index + 1
@@ -154,7 +131,9 @@ class DictExtractor:
         if transc_index != -1:
             buffer = line[start:end]
         return buffer
+
     def find_transl(self, line):
+        """Finding a translation in a dict line."""
         buffer = ""
         transl_index = line.find(" - ")
         start = transl_index + 3
@@ -162,7 +141,9 @@ class DictExtractor:
         if transl_index != -1:
             buffer = line[start:-1]
         return buffer
+
     def find_prefix(self, line):
+        """Finding a prefix in a dict line."""
         buffer = ""
         prefix_index = line.find(":")
         end = prefix_index + 1
