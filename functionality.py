@@ -553,6 +553,7 @@ class Functionality(Window):
             self.lst_savings.insert(x, self.sessions[x])
 
     def open_text(self):
+        """Opens a file with a new text."""
         self.text_find_word = ""
 
         filepath = askopenfilename(
@@ -560,6 +561,7 @@ class Functionality(Window):
         )
         if not filepath:
             return None
+        # if the file is opened 
         self.opened_text = True
         self.path_text = filepath
 
@@ -569,6 +571,7 @@ class Functionality(Window):
             self.txt_text.insert(tk.END, text)      
 
     def open_dict(self):
+        """Opens a dictionary for adding new words."""
         self.dict_find_word = ""
         filepath = askopenfilename(
             filetypes=[("Text file", "*.txt"), ("All files", "*.*")]
@@ -584,17 +587,18 @@ class Functionality(Window):
             self.txt_dict.insert(tk.END, text)
 
     def selected_word(self, event):
+        """Works when you selected a word in lst_new_words."""
         index = self.lst_new_words.curselection()[0]
         word = self.lst_new_words.get(index)
 
-        if self.text_find_word != word:
-            self.ent_word.delete(0, tk.END)
-            self.ent_dict_word.delete(0, tk.END)
-            self.ent_word.insert(tk.END, word)
-            self.ent_dict_word.insert(tk.END, word)
-            self.ent_transc.delete(0, tk.END)
-            self.ent_transl.delete(0, tk.END)
-            self.ent_pref.delete(0, tk.END)
+        # if self.text_find_word != word:
+        self.ent_word.delete(0, tk.END)
+        self.ent_dict_word.delete(0, tk.END)
+        self.ent_word.insert(tk.END, word)
+        self.ent_dict_word.insert(tk.END, word)
+        self.ent_transc.delete(0, tk.END)
+        self.ent_transl.delete(0, tk.END)
+        self.ent_pref.delete(0, tk.END)
         
         self.text_find_txt(word)
 
