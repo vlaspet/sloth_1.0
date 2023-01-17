@@ -408,9 +408,14 @@ class Functionality(Window):
             return None
 
         # correct deleting of the added word
-        idx_new_word = self.lst_new_words.curselection()[0]
-        self.lst_new_words.delete(idx_new_word)
-        self.new_words.pop(idx_new_word)
+        try:
+            idx_new_word = self.lst_new_words.curselection()[0]
+            self.lst_new_words.delete(idx_new_word)
+            self.new_words.pop(idx_new_word)
+        except IndexError as e:
+            print(e)
+        except:
+            print("Somethin wrong here: self.lst_new_words.curselection()[0]")
 
         # if txt_dict is empty than we create a new dict from 1 dict index
         if self.txt_dict.get("1.0", tk.END) != '\n':
@@ -591,14 +596,15 @@ class Functionality(Window):
         index = self.lst_new_words.curselection()[0]
         word = self.lst_new_words.get(index)
 
-        # if self.text_find_word != word:
-        self.ent_word.delete(0, tk.END)
-        self.ent_dict_word.delete(0, tk.END)
-        self.ent_word.insert(tk.END, word)
-        self.ent_dict_word.insert(tk.END, word)
-        self.ent_transc.delete(0, tk.END)
-        self.ent_transl.delete(0, tk.END)
-        self.ent_pref.delete(0, tk.END)
+        # updating an information only when you selected another word
+        if self.text_find_word != word:
+            self.ent_word.delete(0, tk.END)
+            self.ent_dict_word.delete(0, tk.END)
+            self.ent_word.insert(tk.END, word)
+            self.ent_dict_word.insert(tk.END, word)
+            self.ent_transc.delete(0, tk.END)
+            self.ent_transl.delete(0, tk.END)
+            self.ent_pref.delete(0, tk.END)
         
         self.text_find_txt(word)
 
@@ -611,35 +617,37 @@ class Functionality(Window):
             self.text_find_word = word
             self.text_word_indexes = []
             self.text_next_index = 0
-            self.txt_text.tag_remove('found', '1.0', tk.END)
             # to delete a previous tags
+            self.txt_text.tag_remove('found', '1.0', tk.END)
             
             if word:
                 idx = '1.0'
                 while 1:
+                    # found a first index of the found word in text
                     idx = self.txt_text.search(word, idx, nocase=1,
                                     stopindex=tk.END)
-                    # found a first index of the found word in text
 
                     # if not found a word
                     if not idx: break
 
                     lastidx = '%s+%dc' % (idx, len(word))
 
-                    string_idx = int(idx[idx.find(".")+1 :])
                     # index of the word in the line
+                    string_idx = int(idx[idx.find(".")+1 :])
         
                     if string_idx > 0:
-                        buf_idx = idx[:idx.find(".")] + "." + str(
-                            string_idx - 1)
                         # we are shifting on one character back
                         # to check if it is a whole word
-                        buf_lastidx = '%s+%dc' % (buf_idx, (len(word)+2))
+                        buf_idx = idx[:idx.find(".")] + "." + str(
+                            string_idx - 1)
+
                         # plus 2 because our first index on one symbol
                         # greater of the word
-                        buf_word = self.txt_text.get(buf_idx, buf_lastidx)
+                        buf_lastidx = '%s+%dc' % (buf_idx, (len(word)+2))
+                        
                         # found word with with two additional charachters
                         # one at the beginning and one at the end
+                        buf_word = self.txt_text.get(buf_idx, buf_lastidx)
                         buf_word = buf_word.strip(
                             "!@#$%^&*()_+=-`~;:\|'\",./<>? \n"
                         )
@@ -647,20 +655,20 @@ class Functionality(Window):
                             self.text_word_indexes.append(idx)
                             self.txt_text.tag_add('found', idx, lastidx)
                     else:
-                        buf_lastidx = '%s+%dc' % (idx, (len(word)+1))
                         # adding only one charachter to the end
                         # because first index is 0
+                        buf_lastidx = '%s+%dc' % (idx, (len(word)+1))
                         buf_word = word.strip(
                             "!@#$%^&*()_+=-`~;:\|'\",./<>? \n")
                         if buf_word.casefold() == word:
                             self.text_word_indexes.append(idx)
                             self.txt_text.tag_add('found', idx, lastidx)
 
-                    idx = lastidx
                     # idx equals lastidx because we need to find a next
                     # word from the end index of the first one
-                self.txt_text.tag_config('found', foreground='red')
+                    idx = lastidx
                 # turning found words in red colour for highlighting
+                self.txt_text.tag_config('found', foreground='red')
 
         # shifting in the found words by changing view in the text
         # widget
