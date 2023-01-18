@@ -126,9 +126,16 @@ class Window:
             text="Clear fields", command=self.clear_fields)
         self.btn_clear_fields.grid(row=8, column=0, sticky="we")
 
+        self.lbl_savings = tk.Label(self.frm_navig, text="Dictionary")
+        self.lbl_savings.grid(row=9, column=0, sticky="we")
+
         self.btn_shuffle_dict = tk.Button(self.frm_navig,
             text="Shuffle dict", command=self.shuffle_dict)
-        self.btn_shuffle_dict.grid(row=9, column=0, sticky="we")
+        self.btn_shuffle_dict.grid(row=10, column=0, sticky="we")
+        
+        self.btn_create_words = tk.Button(self.frm_navig,
+            text="Create words.txt", command=self.create_words)
+        self.btn_create_words.grid(row=11, column=0, sticky="we")
 
         #savings
         self.lbl_savings = tk.Label(self.frm_navig, text="Savings")

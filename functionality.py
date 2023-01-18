@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import asksaveasfilename
 from tkinter import messagebox
 
 from dumper import Dumper
@@ -251,6 +252,46 @@ class Functionality(Window):
             self.ent_transl.delete(0, tk.END)
             print("Not exists: %s" % e)
 
+    def create_words(self):
+        """Creates words.txt file with only words without translation."""
+        if self.txt_dict.get("1.0", tk.END) != '\n':
+            buffer = []
+            # the start and the end index of the number of the
+            # first block of 200 words
+            start_idx = self.txt_dict.search("[1-9]\n", index="1.0",
+                stopindex=tk.END, regexp=True)
+            end_idx = self.txt_dict.search("\n", index=start_idx,
+                stopindex=tk.END)
+            end_idx = end_idx.split(".")[0] + '.' + str(
+                int(end_idx.split(".")[1]) + 1)
+            start_idx = end_idx.split(".")[0] + ".0"
+
+            # a number of the current 200 words block
+            dict_idx = int(self.txt_dict.get(start_idx, end_idx))
+
+            # to get words from self.txt_dict
+            for line in self.txt_dict.get("1.0", tk.END).split('\n'):
+                if line.find(":") != -1 and line.find(";") != -1:
+                    end = line.find(" - ")
+                    # if it has translation to that place
+                    if end != -1:
+                        buffer.append(line[: end] + ";")
+                    else:
+                        end = line.find("]")
+                        # if it hasn't translation but has
+                        # transcription, to the end of the transcription
+                        if end != -1:
+                            buffer.append(line[: end+1] + ";")
+                        else:
+                            # if that is just a word without anything
+                            buffer.append(line)
+
+            # and create a dict
+            buffer = self.create_d.set_dict(dict_idx, buffer)
+
+            with open("words.txt", "w", encoding="utf-8") as file:
+                file.write("".join(buffer))
+
     def shuffle_dict(self):
         """Shuffles the whole dictionary."""
         buffer = []
@@ -269,7 +310,7 @@ class Functionality(Window):
             # a number of the current 200 words block
             dict_idx = int(self.txt_dict.get(start_idx, end_idx))
 
-            # to get words from that 200 words block and add a new word
+            # to get words from self.txt_dict
             for line in self.txt_dict.get(start_idx, tk.END).split('\n'):
                 if line.find(":") != -1 and line.find(";") != -1:
                     buffer.append(line.strip())
