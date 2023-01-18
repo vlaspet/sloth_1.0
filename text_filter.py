@@ -4,6 +4,7 @@ class TextFilter:
     def __init__(self, file):
         self.data = []
         with open(file, "r", encoding="utf-8") as dict:
+            # using a dict because we need unique words
             dict_buff = {}
             for line in dict:
                 buffer_line = line
@@ -11,7 +12,7 @@ class TextFilter:
                 # from letters and symbols "'" and '-'
                 buffer_line = re.sub(r"[^A-Za-z'-]", ' ', buffer_line.casefold())
 
-                # splits line on parts by " "
+                # splits line on parts by the whitespace
                 buffer = buffer_line.split()
                 if len(buffer) > 1:
                     for word in buffer:
@@ -21,6 +22,6 @@ class TextFilter:
                     buff = buffer[0]
                     dict_buff[buff] = None
             self.data = dict_buff.keys()
-            # dict.close()
+
     def get_words(self):
         return self.data
