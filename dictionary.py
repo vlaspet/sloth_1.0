@@ -13,28 +13,35 @@ class Dictionary:
 
             clear_words = dict_e.get_clear_words_by_prefix("all:")
             for y in clear_words:
+                # spliting words by signs " ", "/", "-"
                 splited_words = split(" |/|-", y)
                 for z in splited_words:
+                    # striping from ",", "!", "?" and making small letters
                     buff = z.strip(",!?").casefold()
                     buffer[buff] = None
+            
             verbs = dict_e.get_words_by_prefix("v:", True)
             for x in verbs:
+                # adding suffixes -ed, -es and -ing
                 buffer[self.adding_ed_v(x)] = None
                 buffer[self.adding_es_v(x)] = None
                 buffer[self.adding_ing_v(x)] = None
+            
+            # irregular verbs
             verbs = dict_e.get_words_by_prefix("vv:", True)
             for x in verbs:
                 buffer[self.adding_es_v(x)] = None
                 buffer[self.adding_ing_v(x)] = None
             self.data = buffer.keys()
         else:
+            # if it's not a dictionary
             text_f = TextFilter(file)
             self.data = text_f.get_words()
 
 
     def is_dict(self, file_name):
         """Checks if it's a dictionary, or just a text for
-        a dictionary using."""
+        a dictionary using. In dictionary must be minimum 3 words"""
         prefixes = ("n:", "v:", "vv:", "adj:", "adv:", "pre:",
             "con:", "pro:", "exc:", "int:", "pref:", "s:")
         matches = 0
@@ -69,17 +76,20 @@ class Dictionary:
         consonants = ['b', 'c', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',
             'n', 'p', 'q', 'r', 's', 't', 'v', 'w', 'x']
         vowels = ['i', 'o', 'u', 'e', 'a']
-        two_charact = ["ch", "sh", "th", "sc"]
         # two characters letters
+        two_charact = ["ch", "sh", "th", "sc"]
+        # the ratio of letters and their sounds in transcription
         ratio_of_letters = {'c' : ['k', 's'], 's' : ['s', 'z'], 't' : ['t', 'd'],
             'j' : ['dj', 'j'], 'g' : ['dj', 'g'], 'ch' : ['ch'],
             'sh' : ['sh'], 'th' : ['th', '-th'],
             'sc' : ['sk', 'sh', 's'], 'q' : ['kw']}
-        # the ratio of letters and their sounds in transcription
 
+        # for checking verbs with more than one word
         words_buffer = self.find_word_in_dict(line).split(" ")
+        # the base word of the verb
         word = words_buffer[0]
         transc = self.find_transc_in_dict(line)
+        
         # if words of a verb is more than one
         if len(words_buffer) > 1:
             # if a word ends in consonant-vowel-consonant
