@@ -45,10 +45,11 @@ class Functionality(Window):
         self.transc = ""
         self.transl = ""
 
+    def start(self):
         self.init_sloth()
 
         # to start mainloop() for window
-        self.start()
+        self.start_loop()
 
     def help(self):
         """A help about a program."""
@@ -715,4 +716,3 @@ class Functionality(Window):
         elif i >= size and size != 0:
             self.dict_next_index = 1
             self.txt_dict.see(self.dict_word_indexes[0])
-            

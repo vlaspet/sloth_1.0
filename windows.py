@@ -165,5 +165,5 @@ class Window:
             command=self.merge_dicts)
         self.btn_dicts_merge.grid(row=4, column=1, sticky="we")
 
-    def start(self):
+    def start_loop(self):
         self.window.mainloop()

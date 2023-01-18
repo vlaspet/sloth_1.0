@@ -1,5 +1,4 @@
 from random import shuffle
-from dict_extractor import DictExtractor
 
 class CreateDict:
     def __init__(self):
@@ -10,19 +9,24 @@ class CreateDict:
         """Creates new dict with dividing symbols with
             blocks by 25 words, and by 200 a bigger block"""
         list_index = 0
-        # index = 1
         self.buffer = []
+        size = len(list)
 
-        for x in range(len(list)):
+        # we're going through the all list of words
+        for x in range(size):
             self.buffer.append("%s\n" % index)
             index += 1
+            # it goes from 2 inclusive to 10
             for i in range(2, 10):
                 for j in range(25):
                     self.buffer.append("%s\n" % list[list_index])
                     list_index += 1
-                    if list_index >= len(list):
+                    # it's the exit from a loop if a list index is greater
+                    # than his size
+                    if list_index >= size:
                         return self.buffer
-                if i != 9:
+                # it stops adding divition to words after 8
+                if i < 9:
                     self.buffer.append("*_%s_*\n" % i)
         return self.buffer
 
@@ -61,6 +65,7 @@ class CreateDict:
         return self.buffer
 
     def shuffle_by_25_words(self, list):
+        """Shuffles by 25 words in the current index order."""
         buffer = []
         # first and last indexes than shifts every loop on 25
         first = 0
@@ -86,8 +91,7 @@ class CreateDict:
         return buffer
         
     def create_dict(self, dict, name):
-        """Creating a dictionary with "name" file name."""
+        """Creating a dictionary with a file name and setted a dict."""
         with open(name, "w") as file:
             for x in dict:
                 file.write(x)
-
