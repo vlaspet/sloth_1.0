@@ -14,21 +14,28 @@ class DictExtractor:
 
     def get_words_by_prefix(self, prefix, with_prefix):
         """Gets words by a prefix
-            with_prefix - with or withou prefixes"""
+            with_prefix - with or without prefixes"""
         buffer = []
+        # it's a location after an index
         index = len(prefix)
+        # it's a location after an index and a whitespace. First index
+        # of the word
         start = index + 1
         for x in self.data:
+            # if a prefix exists then adds a word
             if x[:index].find(prefix) != -1:
                 buffer.append(x if with_prefix else x[start:])
+            # if a prefix "all:" adds to buffer
             elif prefix == "all:":
+                # plus two because ": " and we starts from a first letter
+                # of the word
                 start = x.find(":") + 2
                 buffer.append(x if with_prefix else x[start:])
         return buffer
 
     def get_list_words_by_prefix(self, list, prefix, with_prefix):
-        """Gets words by a prefix
-            with_prefix - with or withou prefixes"""
+        """Gets words by a prefix from a list
+            with_prefix - with or without prefixes"""
         buffer = []
         index = len(prefix)
         start = index + 1
@@ -42,22 +49,27 @@ class DictExtractor:
 
     def get_clear_words_by_prefix(self, prefix):
         """Gets words by a prefix
-            with_prefix - with or withou prefixes"""
+            with_prefix - with or without prefixes"""
         buffer = []
         index = len(prefix)
+        # plus one because a whitespace between the index and the word
         start = index + 1
         for x in self.data:
             if x[:index].find(prefix) != -1:
                 end = x.find(" [")
+                # if a transcription exists this end index is valid
                 if end != -1:
                     buffer.append(x[start:end])
                 else:
                     end = x.find(" - ")
+                    # if a translation exists but the transcription is not
                     if end != -1:
                         buffer.append(x[start:end])
                     else:
+                        # if only a word and a prefix exists
                         buffer.append(x[start:-1])
             elif prefix == "all:":
+                # same thing
                 start = x.find(":") + 2
                 end = x.find(" [")
                 if end != -1:
@@ -69,24 +81,6 @@ class DictExtractor:
                     else:
                         buffer.append(x[start:-1])
         return buffer
-
-    def get_word_inf(self, word, index):
-        """It gets information about a word that you wrote.
-            First it's create a dict then get an information
-            from that dict.
-            index - of a list in dict with 3 values
-            of a transcription, a translation and a prefix
-            If you write greater than or less than a number
-            of a index. It returns all three items"""
-        list = self.data_dict[word]
-        buffer_str = ""
-        if index >= 0 and index < 3:
-            buffer_str += list[index]
-            return buffer_str
-        else:
-            for x in list:
-                buffer_str += x + " "
-            return buffer_str.strip()
 
     def show_data(self):
         """Showing data."""
