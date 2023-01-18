@@ -43,6 +43,7 @@ class CreateDict:
     def shuffle_dict(self, list):
         """Shuffles a dict"""
         self.buffer = list
+        # shuffle with a random shuffle
         shuffle(self.buffer)
         return self.buffer
 
@@ -61,25 +62,31 @@ class CreateDict:
 
     def shuffle_by_25_words(self, list):
         buffer = []
+        # first and last indexes than shifts every loop on 25
         first = 0
         last = 25
+        # we need to know a size for the valid last index
         size = len(list)
 
         while 1:
+            # make a valid last index
             if size < last:
                 last = size
 
             buffer.extend(self.shuffle_in_order(list[first:last],
                 self.prefixes, True))
 
+            # if the last index equals size we return the whole buffer
             if size == last:
                 return buffer
 
+            # shifting indexes on 25
             first += 25
             last += 25
         return buffer
         
     def create_dict(self, dict, name):
+        """Creating a dictionary with "name" file name."""
         with open(name, "w") as file:
             for x in dict:
                 file.write(x)

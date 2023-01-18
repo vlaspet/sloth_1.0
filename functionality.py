@@ -715,4 +715,4 @@ class Functionality(Window):
         elif i >= size and size != 0:
             self.dict_next_index = 1
             self.txt_dict.see(self.dict_word_indexes[0])
-
+            
