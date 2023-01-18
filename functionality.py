@@ -251,6 +251,50 @@ class Functionality(Window):
             self.ent_transl.delete(0, tk.END)
             print("Not exists: %s" % e)
 
+    def shuffle_dict(self):
+        """Shuffles the whole dictionary."""
+        buffer = []
+
+        if self.txt_dict.get("1.0", tk.END) != '\n':
+            # the start and the end index of the number of the
+            # first block of 200 words
+            start_idx = self.txt_dict.search("[1-9]\n", index="1.0",
+                stopindex=tk.END, regexp=True)
+            end_idx = self.txt_dict.search("\n", index=start_idx,
+                stopindex=tk.END)
+            end_idx = end_idx.split(".")[0] + '.' + str(
+                int(end_idx.split(".")[1]) + 1)
+            start_idx = end_idx.split(".")[0] + ".0"
+
+            # a number of the current 200 words block
+            dict_idx = int(self.txt_dict.get(start_idx, end_idx))
+
+            # to get words from that 200 words block and add a new word
+            for line in self.txt_dict.get(start_idx, tk.END).split('\n'):
+                if line.find(":") != -1 and line.find(";") != -1:
+                    buffer.append(line.strip())
+        
+            # shuffles words by a chosen order
+            buffer = self.create_d.shuffle_by_25_words(buffer)
+            # and create a dict
+            buffer = self.create_d.set_dict(dict_idx, buffer)
+
+            # delete a previous 200 words
+            self.txt_dict.delete(start_idx, tk.END)
+
+            # if a start index is 1.0 then without a '\n'
+            if start_idx == "1.0":
+                new_line = "".join(buffer)
+            else:
+                new_line = '\n' + "".join(buffer)
+
+            # inseting in the end and focusing on the end
+            self.txt_dict.insert(tk.END, new_line)
+        else:
+            # setting a new dict from a first index
+            buffer = self.create_d.set_dict(1, [new_line])
+            new_line = "".join(buffer)
+            self.txt_dict.insert(tk.END, new_line)
     
     def merge_dicts(self):
         """Merge all dicts that was opened. Except a current dict
@@ -513,23 +557,6 @@ class Functionality(Window):
         # clearing of the entry field
         self.ent_savings.delete(0, tk.END)
 
-        # save new data in dict
-        filepath = self.dump.get_dump_data(self.current_session)["dict"]
-        
-        # because after clearing data in current session address to "dict"
-        # is not existing. And we're checking if it's existing.
-        if filepath != '':
-            # saving the data to the dictionary
-            with open(filepath, 'w', encoding='utf-8') as file:
-                file.write(self.txt_dict.get("1.0", tk.END).strip())
-        
-        # if we added data to the dictionary but a dictionary was not
-        # opened. We'll create "dictionary.txt"
-        if filepath == '' and self.txt_dict.get("1.0", tk.END) != '\n':
-            self.path_dict = 'dictionary.txt'
-            with open('dictionary.txt', 'w', encoding='utf-8') as file:
-                file.write(self.txt_dict.get("1.0", tk.END).strip())    
-
         # actually saving a session to the dump or resaving if it's
         # existing now
         if session == '':
@@ -545,6 +572,24 @@ class Functionality(Window):
                 self.current_session)
             self.session_up()
 
+        # save new data in dict
+        try:
+            filepath = self.dump.get_dump_data(self.current_session)["dict"]
+            # because after clearing data in current session address to "dict"
+            # is not existing. And we're checking if it's existing.
+            if filepath != '':
+                # saving the data to the dictionary
+                with open(filepath, 'w', encoding='utf-8') as file:
+                    file.write(self.txt_dict.get("1.0", tk.END).strip())
+            
+            # if we added data to the dictionary but a dictionary was not
+            # opened. We'll create "dictionary.txt"
+            if filepath == '' and self.txt_dict.get("1.0", tk.END) != '\n':
+                self.path_dict = 'dictionary.txt'
+                with open('dictionary.txt', 'w', encoding='utf-8') as file:
+                    file.write(self.txt_dict.get("1.0", tk.END).strip())    
+        except KeyError as e:
+            print(f"Not found any savings: {e}")
 
     def session_up(self):
         """It's up a session in lst_savings after saving"""

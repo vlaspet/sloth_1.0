@@ -94,7 +94,7 @@ class Window:
             command=self.add_word)
         self.btn_add_word.grid(row=2, column=0)
 
-        # everything with dictionary
+        #dictionary
         self.lbl_dict = tk.Label(self.frm_dict, text="Dictionary",
             width=45)
         self.lbl_dict.grid(row=0, column=0, sticky="nse")
@@ -102,12 +102,12 @@ class Window:
         self.txt_dict = tk.Text(self.frm_dict, width=60, height=40)
         self.txt_dict.grid(row=1, column=0, sticky="nse")
 
+        self.ent_dict_word = tk.Entry(self.frm_dict, width=15)
+        self.ent_dict_word.grid(row=2, column=0, sticky="nswe", padx=10)
+
         self.btn_find_dict = tk.Button(self.frm_dict, text="Find",
             command=self.dict_find_txt)
         self.btn_find_dict.grid(row=3, column=0, sticky="wens")
-
-        self.ent_dict_word = tk.Entry(self.frm_dict, width=15)
-        self.ent_dict_word.grid(row=2, column=0, sticky="nswe", padx=10)
 
         #navigation
         self.lbl_savings = tk.Label(self.frm_navig, text="Navigation")
@@ -125,6 +125,10 @@ class Window:
         self.btn_clear_fields = tk.Button(self.frm_navig,
             text="Clear fields", command=self.clear_fields)
         self.btn_clear_fields.grid(row=8, column=0, sticky="we")
+
+        self.btn_shuffle_dict = tk.Button(self.frm_navig,
+            text="Shuffle dict", command=self.shuffle_dict)
+        self.btn_shuffle_dict.grid(row=9, column=0, sticky="we")
 
         #savings
         self.lbl_savings = tk.Label(self.frm_navig, text="Savings")
@@ -151,7 +155,6 @@ class Window:
 
         self.lst_dicts = tk.Listbox(self.frm_navig, width=15, height=5)
         self.lst_dicts.grid(row=1, column=1)
-        # self.lst_dicts.bind("<<ListboxSelect>>", self.selected_dict)
 
         self.btn_dicts_delete = tk.Button(self.frm_navig, text="Delete",
             command=self.delete_dict)
