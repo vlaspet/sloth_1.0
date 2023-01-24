@@ -9,47 +9,47 @@ class CreateDict:
         """Creates new dict with dividing symbols with
             blocks by 25 words, and by 200 a bigger block"""
         list_index = 0
-        self.buffer = []
+        buffer = []
         size = len(list)
 
         # we're going through the all list of words
         for x in range(size):
-            self.buffer.append("%s\n" % index)
+            buffer.append("%s\n" % index)
             index += 1
             # it goes from 2 inclusive to 10
             for i in range(2, 10):
                 for j in range(25):
-                    self.buffer.append("%s\n" % list[list_index])
+                    buffer.append("%s\n" % list[list_index])
                     list_index += 1
                     # it's the exit from a loop if a list index is greater
                     # than his size
                     if list_index >= size:
-                        return self.buffer
+                        return buffer
                 # it stops adding divition to words after 8
                 if i < 9:
-                    self.buffer.append("*_%s_*\n" % i)
-        return self.buffer
+                    buffer.append("*_%s_*\n" % i)
+        return buffer
 
     def get_list_words_by_prefix(self, list, prefix, with_prefix):
         """Gets words by a prefix
             with_prefix - with or withou prefixes"""
-        self.buffer = []
+        buffer = []
         index = len(prefix)
         start = index + 1
         for x in list:
             if x[:index].find(prefix) != -1:
-                self.buffer.append(x if with_prefix else x[start:])
+                buffer.append(x if with_prefix else x[start:])
             elif prefix == "all:":
                 start = x.find(":") + 2
-                self.buffer.append(x if with_prefix else x[start:])
-        return self.buffer
+                buffer.append(x if with_prefix else x[start:])
+        return buffer
 
     def shuffle_dict(self, list):
         """Shuffles a dict"""
-        self.buffer = list
+        buffer = list
         # shuffle with a random shuffle
-        shuffle(self.buffer)
-        return self.buffer
+        shuffle(buffer)
+        return buffer
 
     def shuffle_in_order(self, list, list_of_prefixes, with_prefix):
         """Shuffles in order by a prefix list that you gave it.
@@ -58,11 +58,11 @@ class CreateDict:
             list_of_prefixes - a list of prefixes in order
             that you want.
             with_prefix - with or without prefixes"""
-        self.buffer = []
+        buffer = []
         for x in list_of_prefixes:
-            self.buffer += self.shuffle_dict(
+            buffer += self.shuffle_dict(
                 self.get_list_words_by_prefix(list, x, with_prefix))
-        return self.buffer
+        return buffer
 
     def shuffle_by_25_words(self, list):
         """Shuffles by 25 words in the current index order."""
